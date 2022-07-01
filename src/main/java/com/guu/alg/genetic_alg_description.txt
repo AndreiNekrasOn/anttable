@@ -1,0 +1,8 @@
+    Each population consists of individuals (chromosomes). Each chromosome 
+consists of genes (it's unique features)
+    In our case, a chromosome is a version of a timetable 
+(which is a map Activities -> Timeslots), and a gene is an element from A x T 
+    fitness score to the first approximation is the number of conflicts
+to count it more efficiently in our case we need to keep a map teacher -> time
+and group -> time and maybe 
+

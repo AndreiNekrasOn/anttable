@@ -1,0 +1,15 @@
+{
+	"folders": [
+		{
+			"name": "anttable",
+			"path": "../../../../.."
+		}
+	],
+	"settings": {
+		"java.configuration.updateBuildConfiguration": "automatic",
+		"cSpell.words": [
+			"Timeslot"
+		],
+		"cSpell.language": "en,ru"
+	}
+}
