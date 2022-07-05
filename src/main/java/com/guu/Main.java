@@ -139,12 +139,10 @@ public class Main {
         Timeslot[] timeslotsArr = new Timeslot[timeslots.size()];
         timeslots.toArray(timeslotsArr);
         
-        GeneticSearch engine = new GeneticSearch(1000, 
+        GeneticSearch engine = new GeneticSearch(300, 
                 firstShift, new ArrayList<>(List.of(
                     new TeacherIntersections(true))));
         engine.genesis(activities, timeslotsArr);
-        engine.evaluation();
-        System.out.println(engine.getBestTimetable());
-        System.out.println(engine.getBestTimetable().getFitnessScore());
+        engine.search();
     }
 }

@@ -2,7 +2,7 @@ package com.guu.utils;
 
 public class ActivityTimeslot {
     private final Activity activity;
-    private final Timeslot timeslot;
+    private Timeslot timeslot;
     private final String cabinet;
 
     private final DayFormat format;
@@ -19,6 +19,10 @@ public class ActivityTimeslot {
         return timeslot;
     }
 
+    public void setTimeslot(Timeslot ts) {
+        this.timeslot = ts;
+    } 
+    
     public String getCabinet() {
         return cabinet;
     }
@@ -28,7 +32,6 @@ public class ActivityTimeslot {
     public DayFormat getFormat() {
         return format;
     }
-
     
 
     @Override
