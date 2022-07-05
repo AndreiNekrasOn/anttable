@@ -22,6 +22,7 @@ public class GeneticSearch {
     private Timetable secondSelected;
     private Random rng;
     private int mutationRate;
+    private Timeslot[] timeslots;
     
     public GeneticSearch(int maxPopulationSize, DayFormat fmt, 
             List<Constraint> constraints) {
@@ -34,6 +35,7 @@ public class GeneticSearch {
     
     public void genesis(List<Activity> activities,
             Timeslot[] timeslots) {
+        this.timeslots = timeslots;
         currentPopulation = new ArrayList<>();
         for (int i = 0; i < maxPopulationSize; i++) {
             List<ActivityTimeslot> preTT = new ArrayList<>();
@@ -64,29 +66,50 @@ public class GeneticSearch {
         // p_i = \frac{\sum_i^N f_i - f_i}{\sum_i^N f_i} ?
         // numerator is such due to minimization of the fitness ?
         // current implementation might search for the worst result in our case
-        double denominator = currentPopulation.stream()
-                .mapToDouble(Timetable::getFitnessScore).sum();
-        double random = rng.nextDouble() * denominator;
-        firstSelected = currentPopulation.get(0);
-        for (Timetable individual : currentPopulation) {
-            random -= (individual.getFitnessScore());
-            if (random <= 0) {
-                break;
-            } else {
-                firstSelected = individual;
-            }
+        // https://stackoverflow.com/questions/12774014/roulette-wheel-selection-for-genetic-algorithm-in-java
+
+        // double denominator = currentPopulation.stream()
+        //         .mapToDouble(Timetable::getFitnessScore).sum();
+        // double random = rng.nextDouble() * denominator;
+        // firstSelected = currentPopulation.get(0);
+        // for (Timetable individual : currentPopulation) {
+        //     random -= (individual.getFitnessScore());
+        //     if (random <= 0) {
+        //         break;
+        //     } else {
+        //         firstSelected = individual;
+        //     }
+        // }
+
+        // random = rng.nextDouble() * denominator;
+        // secondSelected = currentPopulation.get(0);
+        // for (Timetable individual : currentPopulation) {
+        //     random -= individual.getFitnessScore();
+        //     if (random <= 0) {
+        //         break;
+        //     } else {
+        //         secondSelected = individual;
+        //     }
+        // }
+
+        // now tournament selection from
+
+        List<Timetable> tournament = new ArrayList<>();
+        int tournamentSize = 5;
+        for (int i = 0; i < tournamentSize; i++) {
+            int idx = rng.nextInt(currentPopulation.size());
+            tournament.add(currentPopulation.get(idx));
         }
-        
-        random = rng.nextDouble() * denominator;
-        secondSelected = currentPopulation.get(0);
-        for (Timetable individual : currentPopulation) {
-            random -= individual.getFitnessScore();
-            if (random <= 0) {
-                break;
-            } else {
-                secondSelected = individual;
-            }
+        firstSelected = tournament.stream()
+                .min((a, b) -> (int) (a.getFitnessScore() - b.getFitnessScore()))
+                .get();
+        for (int i = 0; i < tournamentSize; i++) {
+            int idx = rng.nextInt(currentPopulation.size());
+            tournament.add(currentPopulation.get(idx));
         }
+        secondSelected = tournament.stream()
+                .min((a, b) -> (int) (b.getFitnessScore() - a.getFitnessScore()))
+                .get();
     }
 
     public void evolution() {
@@ -113,14 +136,12 @@ public class GeneticSearch {
         // select #mutationRate activities
         // switch their timeslots
         Timetable result = new Timetable(t.getClasses());
+        
         int size = t.getClasses().size();
-        for (int i = 0; i < mutationRate - 1; i++) {
-            int idx1 = rng.nextInt(size);
-            int idx2 = rng.nextInt(size);
-            Timeslot tmp = result.getClasses().get(idx1).getTimeslot();
-            result.getClasses().get(idx1).setTimeslot(
-                    result.getClasses().get(idx2).getTimeslot());
-            result.getClasses().get(idx2).setTimeslot(tmp);
+        for (int i = 0; i < mutationRate; i++) {
+            int idxT = rng.nextInt(timeslots.length);
+            int idxA = rng.nextInt(size);
+            result.getClasses().get(idxA).setTimeslot(timeslots[idxT]);
         }
         return result;
     }
@@ -141,11 +162,13 @@ public class GeneticSearch {
     public Timetable search() {
         // genesis must be run before this
         int maxIterations = 1000;
-        double stoppingFitness = 1;
-        // (bestTimetable != null && bestTimetable.getFitnessScore() <= stoppingFitness)
-        for (int i = 0; i < maxIterations; i++) {
+        double stoppingFitness = 0;
+
+        for (int i = 0; i < maxIterations && 
+                !(bestTimetable != null && bestTimetable.getFitnessScore() <= stoppingFitness); 
+                i++) {
             iteration();
-             System.out.printf("Iteration %d : best score %f\n", 
+            System.out.printf("Iteration %d : best score %f\n", 
                     i, bestTimetable.getFitnessScore());
         }
         return bestGlobalTimetable;

@@ -147,7 +147,7 @@ public class Main {
         Timeslot[] timeslotsArr = new Timeslot[timeslots.size()];
         timeslots.toArray(timeslotsArr);
         
-        GeneticSearch engine = new GeneticSearch(300, 
+        GeneticSearch engine = new GeneticSearch(60, 
                 firstShift, new ArrayList<>(List.of(
                     new TeacherIntersections(true),
                     new GroupsIntersections(true))));
