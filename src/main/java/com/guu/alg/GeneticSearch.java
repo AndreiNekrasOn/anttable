@@ -69,7 +69,7 @@ public class GeneticSearch {
         double random = rng.nextDouble() * denominator;
         firstSelected = currentPopulation.get(0);
         for (Timetable individual : currentPopulation) {
-            random -= (denominator - individual.getFitnessScore());
+            random -= (individual.getFitnessScore());
             if (random <= 0) {
                 break;
             } else {

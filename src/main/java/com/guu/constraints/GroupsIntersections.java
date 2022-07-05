@@ -8,12 +8,14 @@ import com.guu.utils.ActivityTimeslot;
 import com.guu.utils.Timeslot;
 import com.guu.utils.Timetable;
 
-public class TeacherIntersections extends Constraint{
-    private class TeacherMetaData {
+
+// TODO: Either Make AbstractInterscetions or intersection class generic
+public class GroupsIntersections extends Constraint{
+    private class MetaData {
         private String name;
         private Set<Timeslot> timeslots;
         private int intersections;
-        public TeacherMetaData(String name, Set<Timeslot> timeslots) {
+        public MetaData(String name, Set<Timeslot> timeslots) {
             this.name = name;
             this.timeslots = timeslots;
             this.intersections = 0;
@@ -21,7 +23,7 @@ public class TeacherIntersections extends Constraint{
         
         @Override
         public String toString() {
-            return "TeacherMetaData [intersections=" + intersections + ", name=" + name + ", timeslots=" + timeslots
+            return "[intersections=" + intersections + ", name=" + name + ", timeslots=" + timeslots
                     + "]\n";
         }
 
@@ -51,33 +53,33 @@ public class TeacherIntersections extends Constraint{
                 return false;
             if (getClass() != obj.getClass())
                 return false;
-            TeacherMetaData other = (TeacherMetaData) obj;
+            MetaData other = (MetaData) obj;
             return name.equals(other.getName());
         }   
     }
 
-    public TeacherIntersections(Boolean hard) {
+    public GroupsIntersections(Boolean hard) {
         setHard(true);
     }
 
     public double checkConstraint(Timetable gt) {
         List<ActivityTimeslot> ats = gt.getClasses();
-        Set<TeacherMetaData>  teachers = new HashSet<>();
+        Set<MetaData>  groups = new HashSet<>();
         for (ActivityTimeslot a : ats) {
-            teachers.add(
-                new TeacherMetaData(a.getActivity().getTeacher().getName(), 
+            groups.add(
+                new MetaData(a.getActivity().getGroup().getName(), 
                         new HashSet<>()));
         }
     
-        for (TeacherMetaData teacher : teachers) {
+        for (MetaData group : groups) {
             for (ActivityTimeslot a : ats) {
-                if (!a.getActivity().getTeacher().getName().equals(teacher.getName())) {
+                if (!a.getActivity().getGroup().getName().equals(group.getName())) {
                     continue;
                 }
-                if (teacher.getTimeslots().contains(a.getTimeslot())) {
-                    teacher.incrementIntersections();
+                if (group.getTimeslots().contains(a.getTimeslot())) {
+                    group.incrementIntersections();
                 } else {
-                    teacher.getTimeslots().add(a.getTimeslot());
+                    group.getTimeslots().add(a.getTimeslot());
                 }
             }
         }
@@ -85,8 +87,8 @@ public class TeacherIntersections extends Constraint{
         
 
         
-        return teachers.stream()
-                .mapToInt(TeacherMetaData::getIntersections)
+        return groups.stream()
+                .mapToInt(MetaData::getIntersections)
                 .sum();
     }
 }

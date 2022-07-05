@@ -1,6 +1,7 @@
 package com.guu;
 
 import com.guu.alg.GeneticSearch;
+import com.guu.constraints.GroupsIntersections;
 import com.guu.constraints.TeacherIntersections;
 import com.guu.utils.*;
 
@@ -102,17 +103,24 @@ public class Main {
         Set<Teacher> teachers = new HashSet<>();
         Set<Subject> subjects = new HashSet<>();
         for (String gr: List.of("ПМИ", "Бизнес-информатика-1", "Бизнес-информатика-2")) {
-            Group currentGroup = new Group(gr, new ArrayList<>());
-            JSONArray classes = inst.getJSONObject(gr).getJSONArray("Предметы");
-            for (int i = 0; i < classes.length(); i++) {
-                String className = classes.getJSONObject(i).getString("Название");
-                String teacherName = classes.getJSONObject(i).getString("Преподаватель");
-                int n = classes.getJSONObject(i).getInt("Количество");
-                for (int j = 0; j < n; j++) {
-                    currentGroup.addClass(new SubjectTeacherPair(new Subject(className), new Teacher(teacherName)));
+            try {
+
+            
+                Group currentGroup = new Group(gr, new ArrayList<>());
+                JSONArray classes = inst.getJSONObject(gr).getJSONArray("Предметы");
+                for (int i = 0; i < classes.length(); i++) {
+                    String className = classes.getJSONObject(i).getString("Название");
+                    String teacherName = classes.getJSONObject(i).getString("Преподаватель");
+                    int n = classes.getJSONObject(i).getInt("Количество");
+                    for (int j = 0; j < n; j++) {
+                        currentGroup.addClass(new SubjectTeacherPair(new Subject(className), new Teacher(teacherName)));
+                    }
                 }
+                allGroups.add(currentGroup);
+            } catch(JSONException e) {
+                e.printStackTrace();
+                continue;
             }
-            allGroups.add(currentGroup);
         }
 
         return allGroups;
@@ -141,8 +149,13 @@ public class Main {
         
         GeneticSearch engine = new GeneticSearch(300, 
                 firstShift, new ArrayList<>(List.of(
-                    new TeacherIntersections(true))));
+                    new TeacherIntersections(true),
+                    new GroupsIntersections(true))));
         engine.genesis(activities, timeslotsArr);
-        engine.search();
+
+        Timetable bgt = engine.search();
+        System.out.println(bgt);
+
+
     }
 }
