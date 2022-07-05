@@ -29,10 +29,16 @@ public class ActivityTimeslot {
         return format;
     }
 
+    
+
     @Override
     public String toString() {
         String[] weekdays = {"Mon", "Tue", "Wed", "Thu", "Fri", "Sat"};
         return weekdays[timeslot.getWeekday()] + "\n" + activity  + " [" + cabinet + "]\n" +
                 format.getTimes().get(timeslot.getClassNumber());
+    }
+
+    public Activity getActivity() {
+        return activity;
     }
 }

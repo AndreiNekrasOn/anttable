@@ -1,5 +1,7 @@
 package com.guu;
 
+import com.guu.alg.GeneticSearch;
+import com.guu.constraints.TeacherIntersections;
 import com.guu.utils.*;
 
 import java.io.IOException;
@@ -39,6 +41,27 @@ public class Main {
         }
 
         return new Timetable( 6, tcs);
+    }
+
+    public static List<Activity> transformGroupsToActivities(List<Group> groups) {
+        List<Activity> result  = new ArrayList<>();
+        for (Group g : groups) {
+            for (SubjectTeacherPair stp : g.getRequiredClasses()) {
+                result.add(new Activity(g, stp.getTeacher(), stp.getSubject()));
+            }
+        }
+        return result;
+    }
+
+    public static List<Timeslot> generaTimeslots(int maxClasses, int maxDays) {
+        List<Timeslot> result = new ArrayList<>();
+        for (int weekday = 0; weekday < maxDays; weekday++) {
+            for (int classNumber = 0; classNumber < maxClasses; classNumber++) {
+                result.add(new Timeslot(weekday, classNumber));
+            }
+        }
+
+        return result;
     }
 
     public static List<Group> parseExampleGroupsData() throws IOException {
@@ -109,9 +132,19 @@ public class Main {
             System.err.println(e);
             return;
         }
-
-        Timetable gt = queueFillGroupsTimetable(firstShift, groups, null);
-
-        System.out.println(gt);
+        
+        List<Activity> activities = transformGroupsToActivities(groups);
+        // Timetable gt = queueFillGroupsTimetable(firstShift, groups, null);
+        List<Timeslot> timeslots = generaTimeslots(5, 6);
+        Timeslot[] timeslotsArr = new Timeslot[timeslots.size()];
+        timeslots.toArray(timeslotsArr);
+        
+        GeneticSearch engine = new GeneticSearch(1000, 
+                firstShift, new ArrayList<>(List.of(
+                    new TeacherIntersections(true))));
+        engine.genesis(activities, timeslotsArr);
+        engine.evaluation();
+        System.out.println(engine.getBestTimetable());
+        System.out.println(engine.getBestTimetable().getFitnessScore());
     }
 }

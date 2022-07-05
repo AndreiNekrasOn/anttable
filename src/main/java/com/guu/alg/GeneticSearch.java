@@ -1,59 +1,61 @@
 package com.guu.alg;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
 
-/*
-* Initialization: algorithm generates a population from set of items
-* 
-* Selection:
-* 1. The fitness function is evaluated for each individual, providing fitness
-* values, which are then normalized. Normalization means dividing the fitness
-* value of each individual by the sum of all fitness values, so that the sum of
-* all resulting fitness values equals 1.
-* 2. Accumulated normalized fitness values are computed: the accumulated
-* fitness
-* value of an individual is the sum of its own fitness value plus the fitness
-* values of all the previous individuals; the accumulated fitness of the last
-* individual should be 1, otherwise something went wrong in the normalization
-* step.
-* 3. A random number R between 0 and 1 is chosen.
-* 4. The selected individual is the first one whose accumulated normalized
-* value
-* is greater than or equal to R.
-* (In the roulette wheel selection, the probability of choosing an individual
-* for breeding of the next generation is proportional to its fitness, the
-* better the fitness is, the higher chance for that individual to be chosen)
-* 
-* Genetic operation:
-* Mutation is simply a permutation (the number of elements depends on
-* mutation rate)
-* Crossover or recombination - for ex. select few with good
-* need to define a chromosome
-* select a point(s) in both parents chromosomes, swap for two children
-* 
-* Termination:
-*  - Good enough
-*  - Max generations reached
-*  - Alloactaed time reached
-*  - Plato ("plateau")
-*  - 
-* 
-*  
-*/
+import com.guu.constraints.Constraint;
+import com.guu.utils.Activity;
+import com.guu.utils.ActivityTimeslot;
+import com.guu.utils.DayFormat;
+import com.guu.utils.Timeslot;
+import com.guu.utils.Timetable;
 
+public class GeneticSearch {
+    private Timetable bestTimetable; // global max over all populations
+    private List<Timetable> currentPopulation;
+    private List<Constraint> constraints;
+    private int maxPopulationSize; 
+    private DayFormat format;
 
-public abstract class GeneticSearch<T, R> {
-    /*
-     * T - type of a value of a chromosome
-     */
-    protected class TRPair {
-        T t;
-        R r;
+    public GeneticSearch(int maxPopulationSize, DayFormat fmt, 
+            List<Constraint> constraints) {
+        this.maxPopulationSize = maxPopulationSize;
+        this.format = fmt;
+        this.constraints = constraints;
     }
-    T optimalValue;
     
-
-
-    GeneticSearch() {
-        return;
+    public void genesis(List<Activity> activities,
+            Timeslot[] timeslots) {
+        currentPopulation = new ArrayList<>();
+        for (int i = 0; i < maxPopulationSize; i++) {
+            List<ActivityTimeslot> preTT = new ArrayList<>();
+            for (Activity a : activities) {
+                int randomIdx = new Random().nextInt(timeslots.length);
+                preTT.add(new ActivityTimeslot(a, timeslots[randomIdx], 
+                    "cabinet", format));
+            }
+            currentPopulation.add(new Timetable(preTT));
+        }
     }
+
+    public void evaluation() {
+        currentPopulation.forEach(element -> element.setFitnessScore(constraints));
+        bestTimetable = currentPopulation.stream()
+                .min((a, b) -> { 
+                    return (int) (a.getFitnessScore() - b.getFitnessScore()); // bug ? don't know why cast to int
+                })
+                .orElse(null);
+    }
+
+
+    public Timetable getBestTimetable() {
+        return bestTimetable;
+    }
+    public List<Timetable> getCurrentPopulation() {
+        return currentPopulation;
+    }
+
+
+
 }

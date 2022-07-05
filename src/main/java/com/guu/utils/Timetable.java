@@ -7,13 +7,18 @@ import java.util.List;
 
 public class Timetable {
     private int numberOfDaysInAWeek;
-    private ArrayList<ActivityTimeslot> classes;
+    private List<ActivityTimeslot> classes;
+    private double fitnessScore;
 
-    public Timetable(int numberOfDaysInAWeek, ArrayList<ActivityTimeslot> classes) {
+    public Timetable(int numberOfDaysInAWeek, List<ActivityTimeslot> classes) {
         this.numberOfDaysInAWeek = numberOfDaysInAWeek;
         this.classes = classes;
     }
 
+    public Timetable(List<ActivityTimeslot> classes) {
+        this.numberOfDaysInAWeek = -1;
+        this.classes = classes;
+    }
 
     public int getNumberOfDaysInAWeek() {
         return numberOfDaysInAWeek;
@@ -23,20 +28,22 @@ public class Timetable {
         this.numberOfDaysInAWeek = numberOfDaysInAWeek;
     }
 
-    public ArrayList<ActivityTimeslot> getClasses() {
+    public List<ActivityTimeslot> getClasses() {
         return classes;
     }
 
-    public void setClasses(ArrayList<ActivityTimeslot> classes) {
+    public void setClasses(List<ActivityTimeslot> classes) {
         this.classes = classes;
     }
 
-    public int checkConstraints(List<Constraint> constraints) {
+    public double checkConstraints(List<Constraint> constraints) {
         return constraints.stream()
                 .map(c -> c.checkConstraint(this))
-                .reduce(0, Integer::sum);
+                .reduce(0., Double::sum);
     }
 
+
+    
     @Override
     public String toString() {
         StringBuilder result = new StringBuilder();
@@ -52,5 +59,13 @@ public class Timetable {
             result.append("}\n");
         });
         return result.toString();
+    }
+
+    public double getFitnessScore() {
+        return fitnessScore;
+    }
+
+    public void setFitnessScore(List<Constraint> constraints) {
+        this.fitnessScore = checkConstraints(constraints);
     }
 }
