@@ -56,7 +56,8 @@ public class GeneticSearch {
                 })
                 .orElse(null);
         if (bestGlobalTimetable == null || 
-                bestGlobalTimetable.getFitnessScore() <  bestTimetable.getFitnessScore()) {
+                bestGlobalTimetable.getFitnessScore() >  
+                    bestTimetable.getFitnessScore()) {
             bestGlobalTimetable = bestTimetable;
         }
     }
@@ -161,15 +162,14 @@ public class GeneticSearch {
 
     public Timetable search() {
         // genesis must be run before this
-        int maxIterations = 1000;
+        int maxIterations = 100;
         double stoppingFitness = 0;
 
-        for (int i = 0; i < maxIterations && 
-                !(bestTimetable != null && bestTimetable.getFitnessScore() <= stoppingFitness); 
-                i++) {
-            iteration();
-            System.out.printf("Iteration %d : best score %f\n", 
-                    i, bestTimetable.getFitnessScore());
+        for (int i = 0; i < maxIterations; i++) {
+            if (bestTimetable == null || bestTimetable.getFitnessScore() > 
+                    stoppingFitness) {
+                iteration();
+            }
         }
         return bestGlobalTimetable;
     }

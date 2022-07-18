@@ -23,8 +23,8 @@ public class GroupsIntersections extends Constraint{
         
         @Override
         public String toString() {
-            return "[intersections=" + intersections + ", name=" + name + ", timeslots=" + timeslots
-                    + "]\n";
+            return "[intersections=" + intersections + ", name=" + name + 
+                    ", timeslots=" + timeslots + "]\n";
         }
 
         public String getName() {
@@ -84,9 +84,7 @@ public class GroupsIntersections extends Constraint{
             }
         }
 
-        
 
-        
         return groups.stream()
                 .mapToInt(MetaData::getIntersections)
                 .sum();

@@ -21,8 +21,8 @@ public class TeacherIntersections extends Constraint{
         
         @Override
         public String toString() {
-            return "TeacherMetaData [intersections=" + intersections + ", name=" + name + ", timeslots=" + timeslots
-                    + "]\n";
+            return "TeacherMetaData [intersections=" + intersections + 
+                    ", name=" + name + ", timeslots=" + timeslots + "]\n";
         }
 
         public String getName() {
@@ -35,6 +35,9 @@ public class TeacherIntersections extends Constraint{
             return intersections;
         }
         public void incrementIntersections() {
+            if (name.equals("Физкультура") || name.equals("Англ")) {
+                return;
+            }
             intersections += 1;
         }
         
