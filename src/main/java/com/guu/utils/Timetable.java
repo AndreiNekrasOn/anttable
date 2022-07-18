@@ -2,7 +2,6 @@ package com.guu.utils;
 
 import com.guu.constraints.Constraint;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class Timetable {

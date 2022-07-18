@@ -44,6 +44,7 @@ public class GeneticSearch {
         private Timeslot[] timeslots;
         private List<Constraint> constraints;
         private DayFormat format;
+        private Random rng;
 
         public Builder(Timeslot[] timeslots, List<Constraint> constraints,
                 DayFormat format) {
@@ -56,7 +57,6 @@ public class GeneticSearch {
             tournamentSize = 5;
             maxIterations = 1000;
             stoppingFitness = 0;
-
         }
 
         public Builder maxPopulationSize(int maxPopulationSize) {
@@ -83,14 +83,23 @@ public class GeneticSearch {
             this.stoppingFitness = stoppingFitness;
             return this;
         }
+
+        public Builder randomSeed(int seed) {
+            rng = new Random(seed);
+            return this;
+        }
         
         public GeneticSearch build() {
-            GeneticSearch engine = new GeneticSearch(timeslots, constraints, format);
+            GeneticSearch engine = 
+                    new GeneticSearch(timeslots, constraints, format);
             engine.maxPopulationSize = maxPopulationSize;
             engine.mutationRate = mutationRate;
             engine.tournamentSize = tournamentSize;
             engine.maxIterations = maxIterations;
             engine.stoppingFitness = stoppingFitness;
+            if (rng != null) {
+                engine.rng = rng;
+            }
             return engine;
         }
     }
@@ -124,7 +133,7 @@ public class GeneticSearch {
                 .min((a, b) -> { 
                     return (int) (a.getFitnessScore() - b.getFitnessScore()); // bug ? don't know why cast to int
                 })
-                .orElse(null);
+                .orElse(bestTimetable);
         if (bestGlobalTimetable == null || 
                 bestGlobalTimetable.getFitnessScore() >  
                     bestTimetable.getFitnessScore()) {

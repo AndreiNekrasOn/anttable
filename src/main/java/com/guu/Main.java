@@ -41,8 +41,6 @@ public class Main {
         String jsonString = Files.readString(Path.of(path));
         JSONObject obj = new JSONObject(jsonString);
         JSONObject inst = obj.getJSONObject("ИИС - 3"); 
-        Set<Teacher> teachers = new HashSet<>();
-        Set<Subject> subjects = new HashSet<>();
         for (String gr: groups) {
             Group currentGroup = new Group(gr, new ArrayList<>());
             JSONArray classes = inst.getJSONObject(gr)
@@ -63,11 +61,36 @@ public class Main {
             allGroups.add(currentGroup);
         
         }
-
         return allGroups;
     }
 
+    public static void gridSearch(Timeslot[] timeslotsArr, 
+            List<Constraint> constraints, DayFormat format, 
+            List<Activity> activities) {
+        int randomSeed = 0;
+        Random seedGenerator = new Random(randomSeed);
+        for (int population = 10; population < 200; population += 10) {
+            for (int maxIterations = 100; maxIterations < 10000; 
+                    maxIterations += 100) {
+                GeneticSearch engine = new GeneticSearch.Builder(
+                        timeslotsArr, constraints, format)
+                        .maxPopulationSize(population)
+                        .maxIterations(maxIterations)
+                        .randomSeed(seedGenerator.nextInt())
+                        .build();
+                engine.genesis(activities, timeslotsArr);
 
+                Timetable bgt = engine.search();
+                String result = bgt.getFitnessScore() + " "
+                        + population + " "
+                        + maxIterations + " ";
+                for (int i = 2 - (int) bgt.getFitnessScore(); i >= 0; i--) {
+                    result += "!";
+                }
+                System.out.println(result);
+            }
+        }
+    }
 
     public static void main(String[] args) {
         DayFormat firstShift = new DayFormat(new ArrayList<>(
@@ -96,16 +119,16 @@ public class Main {
             new TeacherIntersections(true),
             new GroupsIntersections(true)
         );
-
+        gridSearch(timeslotsArr, constraints, firstShift, activities);
         
-        GeneticSearch engine = 
-                new GeneticSearch.Builder(timeslotsArr, constraints, firstShift)
-                    .maxPopulationSize(50)
-                    .build();
-        engine.genesis(activities, timeslotsArr);
+        // GeneticSearch engine = 
+        //         new GeneticSearch.Builder(timeslotsArr, constraints, firstShift)
+        //             .maxPopulationSize(50)
+        //             .build();
+        // engine.genesis(activities, timeslotsArr);
 
-        Timetable bgt = engine.search();
-        System.out.println(bgt.getFitnessScore());
-        System.out.println(bgt);
+        // Timetable bgt = engine.search();
+        // System.out.println(bgt.getFitnessScore());
+        // System.out.println(bgt);
     }
 }

@@ -84,10 +84,7 @@ public class TeacherIntersections extends Constraint{
                 }
             }
         }
-
-        
-
-        
+       
         return teachers.stream()
                 .mapToInt(TeacherMetaData::getIntersections)
                 .sum();

@@ -24,7 +24,9 @@ public class Timeslot {
 
     @Override 
     public int hashCode() {
-        return new Integer(weekday).hashCode() * 31 + new Integer(classNumber).hashCode();
+        int result = (int) (weekday ^ (weekday >>> 32));
+        result = 31 * result + (int) (classNumber ^ (classNumber >>> 32));
+        return result;
     }
 
     @Override

@@ -9,7 +9,7 @@ import com.guu.utils.Timeslot;
 import com.guu.utils.Timetable;
 
 
-// TODO: Either Make AbstractInterscetions or intersection class generic
+// Either Make AbstractIntersections or intersection class generic - todo 
 public class GroupsIntersections extends Constraint{
     private class MetaData {
         private String name;
