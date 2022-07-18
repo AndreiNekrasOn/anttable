@@ -1,6 +1,7 @@
 package com.guu;
 
 import com.guu.alg.GeneticSearch;
+import com.guu.constraints.Constraint;
 import com.guu.constraints.GroupsIntersections;
 import com.guu.constraints.TeacherIntersections;
 import com.guu.utils.*;
@@ -23,7 +24,7 @@ public class Main {
         return result;
     }
 
-    public static List<Timeslot> generaTimeslots(int maxClasses, int maxDays) {
+    public static List<Timeslot> generateTimeslots(int maxClasses, int maxDays) {
         List<Timeslot> result = new ArrayList<>();
         for (int weekday = 0; weekday < maxDays; weekday++) {
             for (int classNumber = 0; classNumber < maxClasses; classNumber++) {
@@ -88,19 +89,23 @@ public class Main {
             return;
         }
         List<Activity> activities = transformGroupsToActivities(groups);
-        List<Timeslot> timeslots = generaTimeslots(5, 6);
+        List<Timeslot> timeslots = generateTimeslots(5, 6);
         Timeslot[] timeslotsArr = new Timeslot[timeslots.size()];
         timeslots.toArray(timeslotsArr);    
-        GeneticSearch engine = new GeneticSearch(20, 
-                firstShift, new ArrayList<>(List.of(
-                    new TeacherIntersections(true),
-                    new GroupsIntersections(true))));
+        List<Constraint> constraints = List.of(
+            new TeacherIntersections(true),
+            new GroupsIntersections(true)
+        );
+
+        
+        GeneticSearch engine = 
+                new GeneticSearch.Builder(timeslotsArr, constraints, firstShift)
+                    .maxPopulationSize(50)
+                    .build();
         engine.genesis(activities, timeslotsArr);
 
         Timetable bgt = engine.search();
         System.out.println(bgt.getFitnessScore());
         System.out.println(bgt);
-
-
     }
 }

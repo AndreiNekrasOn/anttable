@@ -15,27 +15,97 @@ public class GeneticSearch {
     private Timetable bestGlobalTimetable;
     private Timetable bestTimetable; // global max over all populations
     private List<Timetable> currentPopulation;
-    private List<Constraint> constraints;
-    private int maxPopulationSize; 
-    private DayFormat format;
     private Timetable firstSelected;
     private Timetable secondSelected;
     private Random rng;
-    private int mutationRate;
-    private Timeslot[] timeslots;
     
-    public GeneticSearch(int maxPopulationSize, DayFormat fmt, 
-            List<Constraint> constraints) {
-        this.maxPopulationSize = maxPopulationSize;
-        this.format = fmt;
-        this.constraints = constraints;
-        this.rng = new Random();
-        mutationRate = 2;
+    private Timeslot[] timeslots;
+    private List<Constraint> constraints;
+    private DayFormat format;
+
+    // can this be final?
+    private int maxPopulationSize; 
+    private int mutationRate;
+    private int tournamentSize;
+    private int maxIterations;
+    private double stoppingFitness;
+    
+
+    // using implementation of Builder pattern from
+    // http://rwhansen.blogspot.com/2007/07/theres-builder-pattern-that-joshua.html
+
+    public static class Builder {
+        private int maxPopulationSize;
+        private int mutationRate;
+        private int tournamentSize;
+        private int maxIterations;
+        private double stoppingFitness;
+
+        private Timeslot[] timeslots;
+        private List<Constraint> constraints;
+        private DayFormat format;
+
+        public Builder(Timeslot[] timeslots, List<Constraint> constraints,
+                DayFormat format) {
+            this.timeslots = timeslots;
+            this.constraints = constraints;
+            this.format = format;
+            // default values
+            maxPopulationSize = 20;
+            mutationRate = 2;
+            tournamentSize = 5;
+            maxIterations = 1000;
+            stoppingFitness = 0;
+
+        }
+
+        public Builder maxPopulationSize(int maxPopulationSize) {
+            this.maxPopulationSize = maxPopulationSize;
+            return this;
+        }
+
+        public Builder mutationRate(int mutationRate) {
+            this.mutationRate = mutationRate;
+            return this;
+        }
+
+        public Builder tournamentSize(int tournamentSize) {
+            this.tournamentSize = tournamentSize;
+            return this;
+        }
+
+        public Builder maxIterations(int maxIterations) {
+            this.maxIterations = maxIterations;
+            return this;
+        }
+
+        public Builder stoppingFitness(double stoppingFitness) {
+            this.stoppingFitness = stoppingFitness;
+            return this;
+        }
+        
+        public GeneticSearch build() {
+            GeneticSearch engine = new GeneticSearch(timeslots, constraints, format);
+            engine.maxPopulationSize = maxPopulationSize;
+            engine.mutationRate = mutationRate;
+            engine.tournamentSize = tournamentSize;
+            engine.maxIterations = maxIterations;
+            engine.stoppingFitness = stoppingFitness;
+            return engine;
+        }
     }
+
+    private GeneticSearch(Timeslot[] timeslots, List<Constraint> constraints,
+            DayFormat format) {
+        this.timeslots = timeslots;
+        this.constraints = constraints;
+        this.format = format;
+        rng = new Random();
+    }
+
     
     public void genesis(List<Activity> activities,
             Timeslot[] timeslots) {
-        this.timeslots = timeslots;
         currentPopulation = new ArrayList<>();
         for (int i = 0; i < maxPopulationSize; i++) {
             List<ActivityTimeslot> preTT = new ArrayList<>();
@@ -63,40 +133,8 @@ public class GeneticSearch {
     }
 
     public void selection() {
-        // Roulette Wheel Selection
-        // p_i = \frac{\sum_i^N f_i - f_i}{\sum_i^N f_i} ?
-        // numerator is such due to minimization of the fitness ?
-        // current implementation might search for the worst result in our case
-        // https://stackoverflow.com/questions/12774014/roulette-wheel-selection-for-genetic-algorithm-in-java
-
-        // double denominator = currentPopulation.stream()
-        //         .mapToDouble(Timetable::getFitnessScore).sum();
-        // double random = rng.nextDouble() * denominator;
-        // firstSelected = currentPopulation.get(0);
-        // for (Timetable individual : currentPopulation) {
-        //     random -= (individual.getFitnessScore());
-        //     if (random <= 0) {
-        //         break;
-        //     } else {
-        //         firstSelected = individual;
-        //     }
-        // }
-
-        // random = rng.nextDouble() * denominator;
-        // secondSelected = currentPopulation.get(0);
-        // for (Timetable individual : currentPopulation) {
-        //     random -= individual.getFitnessScore();
-        //     if (random <= 0) {
-        //         break;
-        //     } else {
-        //         secondSelected = individual;
-        //     }
-        // }
-
-        // now tournament selection from
-
         List<Timetable> tournament = new ArrayList<>();
-        int tournamentSize = 5;
+        tournamentSize = 5;
         for (int i = 0; i < tournamentSize; i++) {
             int idx = rng.nextInt(currentPopulation.size());
             tournament.add(currentPopulation.get(idx));
@@ -162,8 +200,8 @@ public class GeneticSearch {
 
     public Timetable search() {
         // genesis must be run before this
-        int maxIterations = 100;
-        double stoppingFitness = 0;
+        maxIterations = 100;
+        stoppingFitness = 0;
 
         for (int i = 0; i < maxIterations; i++) {
             if (bestTimetable == null || bestTimetable.getFitnessScore() > 
