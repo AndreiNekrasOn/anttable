@@ -1,5 +1,6 @@
 package com.guu;
 
+import com.guu.alg.GAJenetics;
 import com.guu.alg.GeneticSearch;
 import com.guu.constraints.Constraint;
 import com.guu.constraints.GroupsIntersections;
@@ -12,7 +13,11 @@ import java.nio.file.Path;
 import java.util.*;
 import org.json.*;
 
+
 public class Main {
+
+    final static List<Activity> ACTIVITIES = new ArrayList<>();
+    final static List<Timeslot> TIMESLOTS = new ArrayList<>();
 
     public static List<Activity> transformGroupsToActivities(List<Group> groups) {
         List<Activity> result  = new ArrayList<>();
@@ -63,35 +68,6 @@ public class Main {
         }
         return allGroups;
     }
-
-    public static void gridSearch(Timeslot[] timeslotsArr, 
-            List<Constraint> constraints, DayFormat format, 
-            List<Activity> activities) {
-        int randomSeed = 0;
-        Random seedGenerator = new Random(randomSeed);
-        for (int population = 10; population < 200; population += 10) {
-            for (int maxIterations = 100; maxIterations < 10000; 
-                    maxIterations += 100) {
-                GeneticSearch engine = new GeneticSearch.Builder(
-                        timeslotsArr, constraints, format)
-                        .maxPopulationSize(population)
-                        .maxIterations(maxIterations)
-                        .randomSeed(seedGenerator.nextInt())
-                        .build();
-                engine.genesis(activities, timeslotsArr);
-
-                Timetable bgt = engine.search();
-                String result = bgt.getFitnessScore() + " "
-                        + population + " "
-                        + maxIterations + " ";
-                for (int i = 2 - (int) bgt.getFitnessScore(); i >= 0; i--) {
-                    result += "!";
-                }
-                System.out.println(result);
-            }
-        }
-    }
-
     public static void main(String[] args) {
         DayFormat firstShift = new DayFormat(new ArrayList<>(
                 List.of("8:15 - 8:55", "9:05 - 9:50", "10:00 - 11:45", 
@@ -111,24 +87,17 @@ public class Main {
             System.err.println(e);
             return;
         }
-        List<Activity> activities = transformGroupsToActivities(groups);
-        List<Timeslot> timeslots = generateTimeslots(5, 6);
-        Timeslot[] timeslotsArr = new Timeslot[timeslots.size()];
-        timeslots.toArray(timeslotsArr);    
-        List<Constraint> constraints = List.of(
-            new TeacherIntersections(true),
-            new GroupsIntersections(true)
-        );
-        gridSearch(timeslotsArr, constraints, firstShift, activities);
-        
-        // GeneticSearch engine = 
-        //         new GeneticSearch.Builder(timeslotsArr, constraints, firstShift)
-        //             .maxPopulationSize(50)
-        //             .build();
-        // engine.genesis(activities, timeslotsArr);
+        GAJenetics.initialize(
+                generateTimeslots(5, 6),
+                transformGroupsToActivities(groups), firstShift);
+        Timetable bestTimetable = GAJenetics.run();
+        System.out.println(bestTimetable);
 
-        // Timetable bgt = engine.search();
-        // System.out.println(bgt.getFitnessScore());
-        // System.out.println(bgt);
+        
+        // check if result was correct
+        List<Constraint> constraints = List.of(
+                new TeacherIntersections(true),
+                new GroupsIntersections(true));
+        System.out.println(bestTimetable.checkConstraints(constraints));
     }
 }

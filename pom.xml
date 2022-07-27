@@ -28,6 +28,13 @@
         <version>20220320</version>
     </dependency>
 
+
+    <dependency>
+        <groupId>io.jenetics</groupId>
+        <artifactId>jenetics</artifactId>
+        <version>3.7.0</version>
+    </dependency>
+
     <dependency>
       <groupId>org.junit.jupiter</groupId>
       <artifactId>junit-jupiter-api</artifactId>
