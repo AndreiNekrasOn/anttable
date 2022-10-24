@@ -8,16 +8,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
-import java.util.concurrent.Callable;
 import java.util.stream.IntStream;
 
 import org.jenetics.Chromosome;
-import org.jenetics.Crossover;
-import org.jenetics.DoubleGene;
 import org.jenetics.Genotype;
 import org.jenetics.IntegerChromosome;
 import org.jenetics.IntegerGene;
-import org.jenetics.Mutator;
 import org.jenetics.Optimize;
 import org.jenetics.RouletteWheelSelector;
 import org.jenetics.TournamentSelector;

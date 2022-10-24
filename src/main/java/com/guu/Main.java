@@ -1,7 +1,7 @@
 package com.guu;
 
 import com.guu.alg.GAJenetics;
-import com.guu.alg.GeneticSearch;
+// import com.guu.alg.GeneticSearch;
 import com.guu.constraints.Constraint;
 import com.guu.constraints.GroupsIntersections;
 import com.guu.constraints.TeacherIntersections;
@@ -13,14 +13,13 @@ import java.nio.file.Path;
 import java.util.*;
 import org.json.*;
 
-
 public class Main {
 
     final static List<Activity> ACTIVITIES = new ArrayList<>();
     final static List<Timeslot> TIMESLOTS = new ArrayList<>();
 
     public static List<Activity> transformGroupsToActivities(List<Group> groups) {
-        List<Activity> result  = new ArrayList<>();
+        List<Activity> result = new ArrayList<>();
         for (Group g : groups) {
             for (SubjectTeacherPair stp : g.getRequiredClasses()) {
                 result.add(new Activity(g, stp.getTeacher(), stp.getSubject()));
@@ -40,13 +39,13 @@ public class Main {
         return result;
     }
 
-    public static List<Group> parseGroupData(String path, List<String> groups) 
+    public static List<Group> parseGroupData(String path, List<String> groups)
             throws IOException, JSONException {
         List<Group> allGroups = new ArrayList<>();
         String jsonString = Files.readString(Path.of(path));
         JSONObject obj = new JSONObject(jsonString);
-        JSONObject inst = obj.getJSONObject("ИИС - 3"); 
-        for (String gr: groups) {
+        JSONObject inst = obj.getJSONObject("ИИС - 3");
+        for (String gr : groups) {
             Group currentGroup = new Group(gr, new ArrayList<>());
             JSONArray classes = inst.getJSONObject(gr)
                     .getJSONArray("Предметы");
@@ -59,19 +58,20 @@ public class Main {
                 for (int j = 0; j < n; j++) {
                     currentGroup.addClass(
                             new SubjectTeacherPair(
-                                new Subject(className), 
-                                new Teacher(teacherName)));
+                                    new Subject(className),
+                                    new Teacher(teacherName)));
                 }
             }
             allGroups.add(currentGroup);
-        
+
         }
         return allGroups;
     }
+
     public static void main(String[] args) {
         DayFormat firstShift = new DayFormat(new ArrayList<>(
-                List.of("8:15 - 8:55", "9:05 - 9:50", "10:00 - 11:45", 
-                "12:30 - 13:15", "14:00 - 14:45")));
+                List.of("8:15 - 8:55", "9:05 - 9:50", "10:00 - 11:45",
+                        "12:30 - 13:15", "14:00 - 14:45")));
         List<Group> groups;
         try {
             String path = "src/class_requirements.json";
@@ -93,7 +93,6 @@ public class Main {
         Timetable bestTimetable = GAJenetics.run();
         System.out.println(bestTimetable);
 
-        
         // check if result was correct
         List<Constraint> constraints = List.of(
                 new TeacherIntersections(true),
