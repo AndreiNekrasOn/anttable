@@ -65,5 +65,4 @@ public class Activity {
         return true;
     }
 
-    
 }

@@ -2,6 +2,7 @@ package com.guu.utils;
 
 public class Teacher {
     private String name;
+
     public Teacher(String name) {
         this.name = name;
     }
@@ -40,5 +41,4 @@ public class Teacher {
         return true;
     }
 
-    
 }

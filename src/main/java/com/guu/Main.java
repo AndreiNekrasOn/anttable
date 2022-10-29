@@ -1,10 +1,7 @@
 package com.guu;
 
 import com.guu.alg.GAJenetics;
-// import com.guu.alg.GeneticSearch;
-import com.guu.constraints.Constraint;
-import com.guu.constraints.GroupsIntersections;
-import com.guu.constraints.TeacherIntersections;
+import com.guu.constraints.*;
 import com.guu.utils.*;
 
 import java.io.IOException;

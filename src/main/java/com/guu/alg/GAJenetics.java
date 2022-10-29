@@ -1,36 +1,13 @@
 package com.guu.alg;
 
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.IntStream;
 
-import org.jenetics.Chromosome;
-import org.jenetics.Genotype;
-import org.jenetics.IntegerChromosome;
-import org.jenetics.IntegerGene;
-import org.jenetics.Optimize;
-import org.jenetics.RouletteWheelSelector;
-import org.jenetics.TournamentSelector;
-import org.jenetics.engine.Engine;
-import org.jenetics.engine.EvolutionResult;
-import org.jenetics.engine.EvolutionStatistics;
-import org.jenetics.util.Factory;
-import org.jenetics.util.IntRange;
-import org.jenetics.util.RandomRegistry;
+import org.jenetics.*;
+import org.jenetics.engine.*;
+import org.jenetics.util.*;
 
-import com.guu.utils.Activity;
-import com.guu.utils.ActivityTimeslot;
-import com.guu.utils.DayFormat;
-import com.guu.utils.Group;
-import com.guu.utils.Teacher;
-import com.guu.utils.Timeslot;
-import com.guu.utils.Timetable;
+import com.guu.utils.*;
 
 public class GAJenetics {
     final static List<Timeslot> TIMESLOTS = new ArrayList<>();
@@ -38,7 +15,6 @@ public class GAJenetics {
     final static Set<Group> GROUPS = new HashSet<>();
     final static Set<Teacher> TEACHERS = new HashSet<>();
     static DayFormat fmt;
-    
 
     public static void initialize(List<Timeslot> timeslots, List<Activity> activities, DayFormat fmt) {
         TIMESLOTS.clear();
@@ -50,7 +26,7 @@ public class GAJenetics {
     }
 
     private static void decoupleActivities() {
-        for (Activity a: ACTIVITIES) {
+        for (Activity a : ACTIVITIES) {
             GROUPS.add(a.getGroup());
             TEACHERS.add(a.getTeacher());
         }
@@ -60,30 +36,29 @@ public class GAJenetics {
         final List<ActivityTimeslot> classes = new ArrayList<>();
         Chromosome<IntegerGene> c = bestGenotype.getChromosome();
         IntStream.range(0, c.length()).forEach(i -> {
-            ActivityTimeslot at = new ActivityTimeslot(ACTIVITIES.get(i), 
-                TIMESLOTS.get(c.getGene(i).intValue()), "", 
-                GAJenetics.fmt);
+            ActivityTimeslot at = new ActivityTimeslot(ACTIVITIES.get(i),
+                    TIMESLOTS.get(c.getGene(i).intValue()), "",
+                    GAJenetics.fmt);
             classes.add(at);
         });
         return new Timetable(classes);
     }
 
-    public static Timetable run() {    
+    public static Timetable run() {
         EvolutionStatistics<Double, ?> statistics = EvolutionStatistics.ofNumber();
         Factory<Genotype<IntegerGene>> gtf = Genotype.of(IntegerChromosome.of(
                 IntRange.of(0, TIMESLOTS.size() - 1), ACTIVITIES.size()));
         final Engine<IntegerGene, Double> engine = Engine
-            .builder(GAJenetics::eval, gtf)
-            .optimize(Optimize.MINIMUM)
-            .executor(Runnable::run) // ONE THREAD FOR DEBUG AND Reproducibility
-            .populationSize(60)
-            .offspringFraction(0.7)
-            .offspringSelector(new TournamentSelector<>())
-            .survivorsSelector(new RouletteWheelSelector<>())
-            //  .alterers(new Mutator<>(), new Crossover<>()) // use default for now
-            .build();
-        Genotype<IntegerGene> result = 
-                RandomRegistry.with(new Random(0), r->engine.stream()
+                .builder(GAJenetics::eval, gtf)
+                .optimize(Optimize.MINIMUM)
+                .executor(Runnable::run) // ONE THREAD FOR DEBUG AND Reproducibility
+                .populationSize(60)
+                .offspringFraction(0.7)
+                .offspringSelector(new TournamentSelector<>())
+                .survivorsSelector(new RouletteWheelSelector<>())
+                // .alterers(new Mutator<>(), new Crossover<>()) // use default for now
+                .build();
+        Genotype<IntegerGene> result = RandomRegistry.with(new Random(0), r -> engine.stream()
                 .limit(10000)
                 .peek(statistics)
                 .collect(EvolutionResult.toBestGenotype()));
@@ -91,25 +66,29 @@ public class GAJenetics {
         System.out.println(result.toString());
         return decode(result, fmt);
     }
-    
-    
+
     static class Counter {
         private int i;
+
         public Counter(int i) {
             this.i = i;
         }
+
         public void inc() {
             i++;
         }
+
         public int get() {
             return i;
         }
     }
+
     interface Callable<I, O> {
 
         public O call(I input);
     }
-    private static <T> int countIntersections(Chromosome<IntegerGene> c, 
+
+    private static <T> int countIntersections(Chromosome<IntegerGene> c,
             Set<T> tSet, Callable<Activity, T> getT) {
         Map<T, Set<Integer>> schedule = new HashMap<>();
         tSet.forEach(t -> schedule.put(t, new HashSet<>()));
@@ -121,7 +100,7 @@ public class GAJenetics {
             } else {
                 schedule.get(t).add(c.getGene(i).intValue());
             }
-            
+
         });
         return cnt.get();
     }
@@ -138,10 +117,8 @@ public class GAJenetics {
                 return a.getTeacher();
             }
         });
-        double score = (
-            teachersConflicts / (TEACHERS.size() * TIMESLOTS.size()) + 
-            groupsConflicts / (GROUPS.size() * TIMESLOTS.size())
-        );
+        double score = (teachersConflicts / (TEACHERS.size() * TIMESLOTS.size()) +
+                groupsConflicts / (GROUPS.size() * TIMESLOTS.size()));
         return score;
     }
 }

@@ -1,52 +1,52 @@
 package com.guu.constraints;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
-import com.guu.utils.ActivityTimeslot;
-import com.guu.utils.Timeslot;
-import com.guu.utils.Timetable;
+import com.guu.utils.*;
 
-public class TeacherIntersections extends Constraint{
+public class TeacherIntersections extends Constraint {
     private class TeacherMetaData {
         private String name;
         private Set<Timeslot> timeslots;
         private int intersections;
+
         public TeacherMetaData(String name, Set<Timeslot> timeslots) {
             this.name = name;
             this.timeslots = timeslots;
             this.intersections = 0;
         }
-        
+
         @Override
         public String toString() {
-            return "TeacherMetaData [intersections=" + intersections + 
+            return "TeacherMetaData [intersections=" + intersections +
                     ", name=" + name + ", timeslots=" + timeslots + "]\n";
         }
 
         public String getName() {
             return name;
         }
+
         public Set<Timeslot> getTimeslots() {
             return timeslots;
         }
+
         public int getIntersections() {
             return intersections;
         }
+
         public void incrementIntersections() {
             if (name.equals("Физкультура") || name.equals("Англ")) {
                 return;
             }
             intersections += 1;
         }
-        
-        @Override
-        public int hashCode(){
-            return name.hashCode();
-        } 
 
-        @Override 
+        @Override
+        public int hashCode() {
+            return name.hashCode();
+        }
+
+        @Override
         public boolean equals(Object obj) {
             if (this == obj)
                 return true;
@@ -56,7 +56,7 @@ public class TeacherIntersections extends Constraint{
                 return false;
             TeacherMetaData other = (TeacherMetaData) obj;
             return name.equals(other.getName());
-        }   
+        }
     }
 
     public TeacherIntersections(Boolean hard) {
@@ -65,13 +65,13 @@ public class TeacherIntersections extends Constraint{
 
     public double checkConstraint(Timetable gt) {
         List<ActivityTimeslot> ats = gt.getClasses();
-        Set<TeacherMetaData>  teachers = new HashSet<>();
+        Set<TeacherMetaData> teachers = new HashSet<>();
         for (ActivityTimeslot a : ats) {
             teachers.add(
-                new TeacherMetaData(a.getActivity().getTeacher().getName(), 
-                        new HashSet<>()));
+                    new TeacherMetaData(a.getActivity().getTeacher().getName(),
+                            new HashSet<>()));
         }
-    
+
         for (TeacherMetaData teacher : teachers) {
             for (ActivityTimeslot a : ats) {
                 if (!a.getActivity().getTeacher().getName().equals(teacher.getName())) {
@@ -84,7 +84,7 @@ public class TeacherIntersections extends Constraint{
                 }
             }
         }
-       
+
         return teachers.stream()
                 .mapToInt(TeacherMetaData::getIntersections)
                 .sum();

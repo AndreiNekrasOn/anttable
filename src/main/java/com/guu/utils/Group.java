@@ -14,6 +14,7 @@ public class Group {
     public String getName() {
         return name;
     }
+
     public void addClass(SubjectTeacherPair sbt) {
         requiredClasses.add(sbt);
     }
@@ -57,6 +58,5 @@ public class Group {
             return false;
         return true;
     }
-    
-    
+
 }

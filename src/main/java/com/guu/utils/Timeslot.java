@@ -22,7 +22,7 @@ public class Timeslot {
         return classNumber;
     }
 
-    @Override 
+    @Override
     public int hashCode() {
         int result = (int) (weekday ^ (weekday >>> 32));
         result = 31 * result + (int) (classNumber ^ (classNumber >>> 32));
@@ -42,5 +42,5 @@ public class Timeslot {
     public String toString() {
         return "" + weekday + "-" + classNumber;
     }
-    
+
 }
