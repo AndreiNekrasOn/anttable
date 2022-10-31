@@ -41,20 +41,18 @@ public class Timetable {
                 .reduce(0., Double::sum);
     }
 
-
-    
     @Override
     public String toString() {
         StringBuilder result = new StringBuilder();
         classes.stream().sorted((tc1, tc2) -> {
             if (tc1.getTimeslot().getWeekday() != tc2.getTimeslot().getWeekday()) {
-                return tc1.getTimeslot().getWeekday() - 
+                return tc1.getTimeslot().getWeekday() -
                         tc2.getTimeslot().getWeekday();
             } else {
-                return tc1.getTimeslot().getClassNumber() - 
+                return tc1.getTimeslot().getClassNumber() -
                         tc2.getTimeslot().getClassNumber();
             }
-        }).forEach(tc ->  {
+        }).forEach(tc -> {
             result.append("{");
             result.append(tc);
             result.append("}\n");

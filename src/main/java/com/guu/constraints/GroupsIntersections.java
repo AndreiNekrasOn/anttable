@@ -1,51 +1,50 @@
 package com.guu.constraints;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
-import com.guu.utils.ActivityTimeslot;
-import com.guu.utils.Timeslot;
-import com.guu.utils.Timetable;
-
+import com.guu.utils.*;
 
 // Either Make AbstractIntersections or intersection class generic - todo 
-public class GroupsIntersections extends Constraint{
+public class GroupsIntersections extends Constraint {
     private class MetaData {
         private String name;
         private Set<Timeslot> timeslots;
         private int intersections;
+
         public MetaData(String name, Set<Timeslot> timeslots) {
             this.name = name;
             this.timeslots = timeslots;
             this.intersections = 0;
         }
-        
+
         @Override
         public String toString() {
-            return "[intersections=" + intersections + ", name=" + name + 
+            return "[intersections=" + intersections + ", name=" + name +
                     ", timeslots=" + timeslots + "]\n";
         }
 
         public String getName() {
             return name;
         }
+
         public Set<Timeslot> getTimeslots() {
             return timeslots;
         }
+
         public int getIntersections() {
             return intersections;
         }
+
         public void incrementIntersections() {
             intersections += 1;
         }
-        
-        @Override
-        public int hashCode(){
-            return name.hashCode();
-        } 
 
-        @Override 
+        @Override
+        public int hashCode() {
+            return name.hashCode();
+        }
+
+        @Override
         public boolean equals(Object obj) {
             if (this == obj)
                 return true;
@@ -55,7 +54,7 @@ public class GroupsIntersections extends Constraint{
                 return false;
             MetaData other = (MetaData) obj;
             return name.equals(other.getName());
-        }   
+        }
     }
 
     public GroupsIntersections(Boolean hard) {
@@ -64,13 +63,13 @@ public class GroupsIntersections extends Constraint{
 
     public double checkConstraint(Timetable gt) {
         List<ActivityTimeslot> ats = gt.getClasses();
-        Set<MetaData>  groups = new HashSet<>();
+        Set<MetaData> groups = new HashSet<>();
         for (ActivityTimeslot a : ats) {
             groups.add(
-                new MetaData(a.getActivity().getGroup().getName(), 
-                        new HashSet<>()));
+                    new MetaData(a.getActivity().getGroup().getName(),
+                            new HashSet<>()));
         }
-    
+
         for (MetaData group : groups) {
             for (ActivityTimeslot a : ats) {
                 if (!a.getActivity().getGroup().getName().equals(group.getName())) {
@@ -83,7 +82,6 @@ public class GroupsIntersections extends Constraint{
                 }
             }
         }
-
 
         return groups.stream()
                 .mapToInt(MetaData::getIntersections)
