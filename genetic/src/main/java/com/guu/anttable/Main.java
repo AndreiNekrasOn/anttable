@@ -1,22 +1,14 @@
 package com.guu.anttable;
 
+import java.io.*;
+import java.nio.charset.StandardCharsets;
+import java.util.*;
+import java.util.stream.Collectors;
+import org.json.*;
+
 import com.guu.anttable.alg.GAJenetics;
 import com.guu.anttable.constraints.*;
 import com.guu.anttable.utils.*;
-
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.net.URL;
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.*;
-import java.util.stream.Collectors;
-
-import org.json.*;
 
 public class Main {
 

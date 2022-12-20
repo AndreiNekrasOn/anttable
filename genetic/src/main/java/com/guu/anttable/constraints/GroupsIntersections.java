@@ -4,7 +4,9 @@ import java.util.*;
 
 import com.guu.anttable.utils.*;
 
-// Either Make AbstractIntersections or intersection class generic - todo 
+/**
+ * TODO: Either Make AbstractIntersections or intersection class generic
+ */
 public class GroupsIntersections extends Constraint {
 
     public GroupsIntersections(Boolean hard) {
