@@ -1,10 +1,11 @@
-package com.guu.utils;
-
-import com.guu.constraints.Constraint;
+package com.guu.anttable.utils;
 
 import java.util.List;
 
+import com.guu.anttable.constraints.*;
+
 public class Timetable {
+
     private int numberOfDaysInAWeek;
     private List<ActivityTimeslot> classes;
     private double fitnessScore;

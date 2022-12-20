@@ -1,6 +1,7 @@
-package com.guu.utils;
+package com.guu.anttable.utils;
 
 public class Activity {
+
     private final Group group;
     private final Teacher teacher;
     private final Subject subject;
@@ -40,28 +41,37 @@ public class Activity {
 
     @Override
     public boolean equals(Object obj) {
-        if (this == obj)
+        if (this == obj) {
             return true;
-        if (obj == null)
+        }
+        if (obj == null) {
             return false;
-        if (getClass() != obj.getClass())
+        }
+        if (getClass() != obj.getClass()) {
             return false;
+        }
         Activity other = (Activity) obj;
         if (group == null) {
-            if (other.group != null)
+            if (other.group != null) {
                 return false;
-        } else if (!group.equals(other.group))
+            }
+        } else if (!group.equals(other.group)) {
             return false;
+        }
         if (subject == null) {
-            if (other.subject != null)
+            if (other.subject != null) {
                 return false;
-        } else if (!subject.equals(other.subject))
+            }
+        } else if (!subject.equals(other.subject)) {
             return false;
+        }
         if (teacher == null) {
-            if (other.teacher != null)
+            if (other.teacher != null) {
                 return false;
-        } else if (!teacher.equals(other.teacher))
+            }
+        } else if (!teacher.equals(other.teacher)) {
             return false;
+        }
         return true;
     }
 

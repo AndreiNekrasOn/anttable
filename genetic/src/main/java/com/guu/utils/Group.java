@@ -1,10 +1,11 @@
-package com.guu.utils;
+package com.guu.anttable.utils;
 
 import java.util.ArrayList;
 
 public class Group {
-    private ArrayList<SubjectTeacherPair> requiredClasses;
+
     private final String name;
+    private ArrayList<SubjectTeacherPair> requiredClasses;
 
     public Group(String name, ArrayList<SubjectTeacherPair> requiredClasses) {
         this.name = name;
@@ -39,23 +40,30 @@ public class Group {
 
     @Override
     public boolean equals(Object obj) {
-        if (this == obj)
+        if (this == obj) {
             return true;
-        if (obj == null)
+        }
+        if (obj == null) {
             return false;
-        if (getClass() != obj.getClass())
+        }
+        if (getClass() != obj.getClass()) {
             return false;
+        }
         Group other = (Group) obj;
         if (name == null) {
-            if (other.name != null)
+            if (other.name != null) {
                 return false;
-        } else if (!name.equals(other.name))
+            }
+        } else if (!name.equals(other.name)) {
             return false;
+        }
         if (requiredClasses == null) {
-            if (other.requiredClasses != null)
+            if (other.requiredClasses != null) {
                 return false;
-        } else if (!requiredClasses.equals(other.requiredClasses))
+            }
+        } else if (!requiredClasses.equals(other.requiredClasses)) {
             return false;
+        }
         return true;
     }
 

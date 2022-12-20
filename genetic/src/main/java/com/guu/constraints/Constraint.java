@@ -1,8 +1,9 @@
-package com.guu.constraints;
+package com.guu.anttable.constraints;
 
-import com.guu.utils.Timetable;
+import com.guu.anttable.utils.Timetable;
 
 public abstract class Constraint {
+
     Boolean hard;
 
     public abstract double checkConstraint(Timetable gt); // returns constraint

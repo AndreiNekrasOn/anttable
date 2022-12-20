@@ -1,0 +1,38 @@
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <name>Module anttable/genetic</name>
+
+    <parent>
+        <groupId>com.guu.git</groupId>
+        <artifactId>anttable</artifactId>
+        <version>{revision}</version>
+    </parent>
+    <groupId>com.guu.anttable</groupId>
+    <artifactId>genetic</artifactId>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.json</groupId>
+            <artifactId>json</artifactId>
+            <version>20220320</version>
+        </dependency>
+        <dependency>
+            <groupId>io.jenetics</groupId>
+            <artifactId>jenetics</artifactId>
+            <version>3.7.0</version>
+        </dependency>
+    </dependencies>
+
+    <build>
+<!--        <resources>-->
+<!--            <resource>-->
+<!--                <directory>${basedir}/src/main/java/</directory>-->
+<!--                <includes>-->
+<!--                    <include>com/guu/utils/resources/class_requirements.json</include>-->
+<!--                </includes>-->
+<!--            </resource>-->
+<!--        </resources>-->
+    </build>
+</project>

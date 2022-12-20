@@ -1,18 +1,19 @@
-package com.guu.utils;
+package com.guu.anttable.utils;
 
-public class Teacher {
+public class Subject {
+
     private String name;
 
-    public Teacher(String name) {
+    public Subject(String name) {
         this.name = name;
+    }
+
+    public String getName() {
+        return name;
     }
 
     @Override
     public String toString() {
-        return name;
-    }
-
-    public String getName() {
         return name;
     }
 
@@ -26,18 +27,23 @@ public class Teacher {
 
     @Override
     public boolean equals(Object obj) {
-        if (this == obj)
+        if (this == obj) {
             return true;
-        if (obj == null)
+        }
+        if (obj == null) {
             return false;
-        if (getClass() != obj.getClass())
+        }
+        if (getClass() != obj.getClass()) {
             return false;
-        Teacher other = (Teacher) obj;
+        }
+        Subject other = (Subject) obj;
         if (name == null) {
-            if (other.name != null)
+            if (other.name != null) {
                 return false;
-        } else if (!name.equals(other.name))
+            }
+        } else if (!name.equals(other.name)) {
             return false;
+        }
         return true;
     }
 

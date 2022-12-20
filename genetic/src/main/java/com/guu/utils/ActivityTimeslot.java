@@ -1,14 +1,14 @@
-package com.guu.utils;
+package com.guu.anttable.utils;
 
 public class ActivityTimeslot {
-    private final Activity activity;
-    private Timeslot timeslot;
-    private final String cabinet;
 
+    private final Activity activity;
+    private final String cabinet;
     private final DayFormat format;
+    private Timeslot timeslot;
 
     public ActivityTimeslot(Activity activity, Timeslot timeslot,
-            String cabinet, DayFormat format) {
+                            String cabinet, DayFormat format) {
         this.activity = activity;
         this.timeslot = timeslot;
         this.cabinet = cabinet;
@@ -33,7 +33,7 @@ public class ActivityTimeslot {
 
     @Override
     public String toString() {
-        String[] weekdays = { "Mon", "Tue", "Wed", "Thu", "Fri", "Sat" };
+        String[] weekdays = {"Mon", "Tue", "Wed", "Thu", "Fri", "Sat"};
         return weekdays[timeslot.getWeekday()] + "\n" + activity +
                 " [" + cabinet + "]\n" +
                 format.getTimes().get(timeslot.getClassNumber());

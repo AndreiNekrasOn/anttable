@@ -1,8 +1,9 @@
-package com.guu.utils;
+package com.guu.anttable.utils;
 
 import java.util.ArrayList;
 
 public class DayFormat {
+
     private ArrayList<String> times;
 
     public DayFormat(ArrayList<String> times) {

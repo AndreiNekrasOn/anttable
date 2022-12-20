@@ -1,6 +1,7 @@
-package com.guu.utils;
+package com.guu.anttable.utils;
 
 public class Timeslot {
+
     private final int weekday;
     private final int classNumber;
 

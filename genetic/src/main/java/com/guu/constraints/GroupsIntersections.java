@@ -1,12 +1,45 @@
-package com.guu.constraints;
+package com.guu.anttable.constraints;
 
 import java.util.*;
 
-import com.guu.utils.*;
+import com.guu.anttable.utils.*;
 
 // Either Make AbstractIntersections or intersection class generic - todo 
 public class GroupsIntersections extends Constraint {
+
+    public GroupsIntersections(Boolean hard) {
+        setHard(true);
+    }
+
+    public double checkConstraint(Timetable gt) {
+        List<ActivityTimeslot> ats = gt.getClasses();
+        Set<MetaData> groups = new HashSet<>();
+        for (ActivityTimeslot a : ats) {
+            groups.add(
+                    new MetaData(a.getActivity().getGroup().getName(),
+                            new HashSet<>()));
+        }
+
+        for (MetaData group : groups) {
+            for (ActivityTimeslot a : ats) {
+                if (!a.getActivity().getGroup().getName().equals(group.getName())) {
+                    continue;
+                }
+                if (group.getTimeslots().contains(a.getTimeslot())) {
+                    group.incrementIntersections();
+                } else {
+                    group.getTimeslots().add(a.getTimeslot());
+                }
+            }
+        }
+
+        return groups.stream()
+                .mapToInt(MetaData::getIntersections)
+                .sum();
+    }
+
     private class MetaData {
+
         private String name;
         private Set<Timeslot> timeslots;
         private int intersections;
@@ -46,45 +79,17 @@ public class GroupsIntersections extends Constraint {
 
         @Override
         public boolean equals(Object obj) {
-            if (this == obj)
+            if (this == obj) {
                 return true;
-            if (obj == null)
+            }
+            if (obj == null) {
                 return false;
-            if (getClass() != obj.getClass())
+            }
+            if (getClass() != obj.getClass()) {
                 return false;
+            }
             MetaData other = (MetaData) obj;
             return name.equals(other.getName());
         }
-    }
-
-    public GroupsIntersections(Boolean hard) {
-        setHard(true);
-    }
-
-    public double checkConstraint(Timetable gt) {
-        List<ActivityTimeslot> ats = gt.getClasses();
-        Set<MetaData> groups = new HashSet<>();
-        for (ActivityTimeslot a : ats) {
-            groups.add(
-                    new MetaData(a.getActivity().getGroup().getName(),
-                            new HashSet<>()));
-        }
-
-        for (MetaData group : groups) {
-            for (ActivityTimeslot a : ats) {
-                if (!a.getActivity().getGroup().getName().equals(group.getName())) {
-                    continue;
-                }
-                if (group.getTimeslots().contains(a.getTimeslot())) {
-                    group.incrementIntersections();
-                } else {
-                    group.getTimeslots().add(a.getTimeslot());
-                }
-            }
-        }
-
-        return groups.stream()
-                .mapToInt(MetaData::getIntersections)
-                .sum();
     }
 }

@@ -1,4 +1,4 @@
-package com.guu.alg;
+package com.guu.anttable.alg;
 
 import java.util.*;
 import java.util.stream.IntStream;
@@ -7,9 +7,10 @@ import org.jenetics.*;
 import org.jenetics.engine.*;
 import org.jenetics.util.*;
 
-import com.guu.utils.*;
+import com.guu.anttable.utils.*;
 
 public class GAJenetics {
+
     final static List<Timeslot> TIMESLOTS = new ArrayList<>();
     final static List<Activity> ACTIVITIES = new ArrayList<>();
     final static Set<Group> GROUPS = new HashSet<>();
@@ -67,29 +68,8 @@ public class GAJenetics {
         return decode(result, fmt);
     }
 
-    static class Counter {
-        private int i;
-
-        public Counter(int i) {
-            this.i = i;
-        }
-
-        public void inc() {
-            i++;
-        }
-
-        public int get() {
-            return i;
-        }
-    }
-
-    interface Callable<I, O> {
-
-        public O call(I input);
-    }
-
     private static <T> int countIntersections(Chromosome<IntegerGene> c,
-            Set<T> tSet, Callable<Activity, T> getT) {
+                                              Set<T> tSet, Callable<Activity, T> getT) {
         Map<T, Set<Integer>> schedule = new HashMap<>();
         tSet.forEach(t -> schedule.put(t, new HashSet<>()));
         final Counter cnt = new Counter(0);
@@ -120,5 +100,27 @@ public class GAJenetics {
         double score = (teachersConflicts / (TEACHERS.size() * TIMESLOTS.size()) +
                 groupsConflicts / (GROUPS.size() * TIMESLOTS.size()));
         return score;
+    }
+
+    interface Callable<I, O> {
+
+        public O call(I input);
+    }
+
+    static class Counter {
+
+        private int i;
+
+        public Counter(int i) {
+            this.i = i;
+        }
+
+        public void inc() {
+            i++;
+        }
+
+        public int get() {
+            return i;
+        }
     }
 }
