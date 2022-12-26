@@ -45,6 +45,10 @@ public class Timetable {
     @Override
     public String toString() {
         StringBuilder result = new StringBuilder();
+        result.append("""
+                {"Institute": "ИИС",
+                "Расписание": [
+                """);
         classes.stream().sorted((tc1, tc2) -> {
             if (tc1.getTimeslot().getWeekday() != tc2.getTimeslot().getWeekday()) {
                 return tc1.getTimeslot().getWeekday() -
@@ -54,10 +58,11 @@ public class Timetable {
                         tc2.getTimeslot().getClassNumber();
             }
         }).forEach(tc -> {
-            result.append("{");
             result.append(tc);
-            result.append("}\n");
+            result.append(",\n");
         });
+        result.deleteCharAt(result.lastIndexOf(","));
+        result.append("]\n}");
         return result.toString();
     }
 
