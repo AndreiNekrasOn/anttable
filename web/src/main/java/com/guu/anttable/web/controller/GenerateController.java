@@ -6,7 +6,6 @@ import com.guu.anttable.utils.Group;
 import com.guu.anttable.utils.Timetable;
 import com.guu.anttable.web.TimetablePojo;
 import org.json.JSONException;
-import org.json.JSONObject;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
