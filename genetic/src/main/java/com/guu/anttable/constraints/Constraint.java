@@ -4,9 +4,17 @@ import com.guu.anttable.utils.Timetable;
 
 public abstract class Constraint {
 
+    /**
+     * Признак обязательности выполнения ограничения
+     */
     Boolean hard;
 
-    public abstract double checkConstraint(Timetable gt); // returns constraint
+    /**
+     *
+     * @param gt - расписание
+     * @return значение целевой функции
+     */
+    public abstract double checkConstraint(Timetable gt);
 
     public Boolean getHard() {
         return hard;

@@ -40,7 +40,9 @@ public class Main {
             throws IOException, JSONException {
         List<Group> allGroups = new ArrayList<>();
         InputStream is = Main.class.getResourceAsStream("/class_requirements.json");
-        String jsonString = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8)).lines().collect(Collectors.joining("\n"));
+        String jsonString = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8))
+                .lines()
+                .collect(Collectors.joining("\n"));
         JSONObject obj = new JSONObject(jsonString);
         JSONObject inst = obj.getJSONObject("ИИС - 3");
         for (String gr : groups) {

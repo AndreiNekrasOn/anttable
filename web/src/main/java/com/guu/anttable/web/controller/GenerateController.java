@@ -31,17 +31,13 @@ public class GenerateController {
                 List.of("8:15 - 8:55", "9:05 - 9:50", "10:00 - 11:45",
                         "12:30 - 13:15", "14:00 - 14:45")));
         List<Group> groups;
-
-        List<String> groupsNames = List.of(
-                "ПМИ", "Бизнес-информатика-1", "Бизнес-информатика-2");
+        List<String> groupsNames = List.of("ПМИ", "Бизнес-информатика-1", "Бизнес-информатика-2");
         groups = parseGroupData("", groupsNames);
-
         GAJenetics.initialize(
                 generateTimeslots(5, 6),
                 transformGroupsToActivities(groups), firstShift);
         Timetable bestTimetable = GAJenetics.run();
-        System.out.println(bestTimetable);
-
+//        System.out.println(bestTimetable);
         return new TimetablePojo(bestTimetable);
     }
 
