@@ -4,28 +4,12 @@ import java.util.List;
 
 public class Timetable {
 
-    private int numberOfDaysInAWeek;
     private List<ActivityTimeslot> classes;
     private double fitnessScore;
 
-    public Timetable(int numberOfDaysInAWeek, List<ActivityTimeslot> classes) {
-        this.numberOfDaysInAWeek = numberOfDaysInAWeek;
-        this.classes = classes;
-    }
-
     public Timetable(List<ActivityTimeslot> classes) {
-        this.numberOfDaysInAWeek = -1;
         this.classes = classes;
     }
-
-    public int getNumberOfDaysInAWeek() {
-        return numberOfDaysInAWeek;
-    }
-
-    public void setNumberOfDaysInAWeek(int numberOfDaysInAWeek) {
-        this.numberOfDaysInAWeek = numberOfDaysInAWeek;
-    }
-
     public List<ActivityTimeslot> getClasses() {
         return classes;
     }

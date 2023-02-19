@@ -19,14 +19,12 @@ public class GAJenetics {
     final static List<Activity> ACTIVITIES = new ArrayList<>();
     final static Set<NamedEntity> GROUPS = new HashSet<>();
     final static Set<NamedEntity> TEACHERS = new HashSet<>();
-    static DayFormat fmt;
 
-    public static void initialize(List<Timeslot> timeslots, List<Activity> activities, DayFormat fmt) {
+    public static void initialize(List<Timeslot> timeslots, List<Activity> activities) {
         TIMESLOTS.clear();
         ACTIVITIES.clear();
         TIMESLOTS.addAll(timeslots);
         ACTIVITIES.addAll(activities);
-        GAJenetics.fmt = fmt;
         decoupleActivities();
     }
 
@@ -42,8 +40,7 @@ public class GAJenetics {
         Chromosome<IntegerGene> c = bestGenotype.getChromosome();
         IntStream.range(0, c.length()).forEach(i -> {
             ActivityTimeslot at = new ActivityTimeslot(ACTIVITIES.get(i),
-                    TIMESLOTS.get(c.getGene(i).intValue()), "",
-                    GAJenetics.fmt);
+                    TIMESLOTS.get(c.getGene(i).intValue()), "");
             classes.add(at);
         });
         return new Timetable(classes);
@@ -97,11 +94,13 @@ public class GAJenetics {
      */
     private static <T> double evalCommon(Genotype<IntegerGene> gt, Set<NamedEntity> allT, Function<Activity, NamedEntity> getT) {
         double score = 0;
-        double windows = WindowCounter.count(gt, ACTIVITIES, getT, TIMESLOTS.size(), fmt.getTimes().size()); // for now fix 5
+        int activitiesPerDay = 5; // TODO: remove hardcode
+
+        double windows = WindowCounter.count(gt, ACTIVITIES, getT, TIMESLOTS.size(), activitiesPerDay); 
         score += (windows) / (TIMESLOTS.size());
 
-        double days = DaysCounter.count(gt, ACTIVITIES, getT, TIMESLOTS.size(), fmt.getTimes().size());
-        score += days / (allT.size() * fmt.getTimes().size());
+        double days = DaysCounter.count(gt, ACTIVITIES, getT, TIMESLOTS.size(), activitiesPerDay);
+        score += days / (allT.size() * activitiesPerDay);
 
         return score;
 

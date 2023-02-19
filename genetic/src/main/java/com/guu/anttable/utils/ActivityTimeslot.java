@@ -4,15 +4,12 @@ public class ActivityTimeslot {
 
     private final Activity activity;
     private final String cabinet;
-    private final DayFormat format;
     private Timeslot timeslot;
 
-    public ActivityTimeslot(Activity activity, Timeslot timeslot,
-                            String cabinet, DayFormat format) {
+    public ActivityTimeslot(Activity activity, Timeslot timeslot, String cabinet) {
         this.activity = activity;
         this.timeslot = timeslot;
         this.cabinet = cabinet;
-        this.format = format;
     }
 
     public Timeslot getTimeslot() {
@@ -27,11 +24,10 @@ public class ActivityTimeslot {
         return cabinet;
     }
 
-    public DayFormat getFormat() {
-        return format;
-    }
+    public Activity getActivity() {
+        return activity;
+    }    @Override
 
-    @Override
     public String toString() {
         String[] weekdays = {"Mon", "Tue", "Wed", "Thu", "Fri", "Sat"};
         return String.format("""
@@ -45,11 +41,8 @@ public class ActivityTimeslot {
                 activity.getGroup(),
                 activity.getSubject(),
                 activity.getTeacher(),
-                format.getTimes().get(timeslot.getClassNumber())
+                timeslot.getClassNumber()
         );
     }
 
-    public Activity getActivity() {
-        return activity;
-    }
 }

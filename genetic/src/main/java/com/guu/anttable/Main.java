@@ -68,9 +68,6 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        DayFormat firstShift = new DayFormat(new ArrayList<>(
-                List.of("8:15 - 8:55", "9:05 - 9:50", "10:00 - 11:45",
-                        "12:30 - 13:15", "14:00 - 14:45")));
         List<Group> groups;
         try {
             List<String> groupsNames = List.of(
@@ -87,7 +84,7 @@ public class Main {
         }
         GAJenetics.initialize(
                 generateTimeslots(5, 6),
-                transformGroupsToActivities(groups), firstShift);
+                transformGroupsToActivities(groups));
         Timetable bestTimetable = GAJenetics.run();
         System.out.println(bestTimetable);
         System.out.println(bestTimetable.getFitnessScore());
