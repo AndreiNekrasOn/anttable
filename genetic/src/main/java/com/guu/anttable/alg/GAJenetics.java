@@ -7,7 +7,8 @@ import org.jenetics.*;
 import org.jenetics.engine.*;
 import org.jenetics.util.*;
 
-import com.guu.anttable.constraints.IntersectionsCount;
+import com.guu.anttable.constraints.IntersectionsCounter;
+import com.guu.anttable.constraints.WindowCounter;
 import com.guu.anttable.utils.*;
 
 public class GAJenetics {
@@ -66,14 +67,21 @@ public class GAJenetics {
                 .collect(EvolutionResult.toBestGenotype()));
         System.out.println(statistics);
         System.out.println(result.toString());
-        return decode(result);
+        Timetable best = decode(result);
+        best.setFitnessScore(eval(result));
+        System.out.println("NOW FOR WINDOW COUNTER FOR BEST");
+        System.out.println(WindowCounter.count(result, TEACHERS, ACTIVITIES, a -> a.getTeacher(), TIMESLOTS.size(), 5));
+        return best;
     }
 
     private static double eval(Genotype<IntegerGene> gt) {
-        double groupsConflicts = IntersectionsCount.count(gt, GROUPS, ACTIVITIES, actitvity -> actitvity.getGroup());
-        double teachersConflicts = IntersectionsCount.count(gt, TEACHERS, ACTIVITIES, actitvity -> actitvity.getTeacher());
-        double score = (teachersConflicts / (TEACHERS.size() * TIMESLOTS.size()) +
-                groupsConflicts / (GROUPS.size() * TIMESLOTS.size()));
+        double groupsConflicts = IntersectionsCounter.count(gt, GROUPS, ACTIVITIES, actitvity -> actitvity.getGroup());
+        double teachersConflicts = IntersectionsCounter.count(gt, TEACHERS, ACTIVITIES, actitvity -> actitvity.getTeacher());
+        double groupWindows = WindowCounter.count(gt, GROUPS, ACTIVITIES, actitvity -> actitvity.getGroup(), TIMESLOTS.size(), 5); // for now fix 5
+        double teachersWindows = WindowCounter.count(gt, TEACHERS, ACTIVITIES, actitvity -> actitvity.getTeacher(), TIMESLOTS.size(), 5);
+        double score = teachersConflicts + groupsConflicts;
+        // score = score * 100; // higher weight for hard constraints
+        score += (groupWindows + 2 * teachersWindows) / (TIMESLOTS.size() * 3); // in (0, 1), guaranteed
         return score;
     }
 }
