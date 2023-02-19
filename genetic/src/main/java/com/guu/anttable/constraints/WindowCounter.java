@@ -13,8 +13,7 @@ public class WindowCounter {
     /**
      * Counts the length of all windows for NamedEntity
      */
-    public static double count(Genotype<IntegerGene> gt, final Set<NamedEntity> lookup, 
-            final List<Activity> activities, Function<Activity, NamedEntity> getEntity, 
+    public static double count(Genotype<IntegerGene> gt, final List<Activity> activities, Function<Activity, NamedEntity> getEntity,
             int timeslotsSize, int dayDuration) {
         Chromosome<IntegerGene> c = gt.getChromosome();
         Map<String, int[]> entityTimetable = new HashMap<>(); // можно улучшить через битовые операции

@@ -1,12 +1,14 @@
 package com.guu.anttable.alg;
 
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.IntStream;
 
 import org.jenetics.*;
 import org.jenetics.engine.*;
 import org.jenetics.util.*;
 
+import com.guu.anttable.constraints.DaysCounter;
 import com.guu.anttable.constraints.IntersectionsCounter;
 import com.guu.anttable.constraints.WindowCounter;
 import com.guu.anttable.utils.*;
@@ -69,19 +71,39 @@ public class GAJenetics {
         System.out.println(result.toString());
         Timetable best = decode(result);
         best.setFitnessScore(eval(result));
-        System.out.println("NOW FOR WINDOW COUNTER FOR BEST");
-        System.out.println(WindowCounter.count(result, TEACHERS, ACTIVITIES, a -> a.getTeacher(), TIMESLOTS.size(), 5));
         return best;
     }
 
     private static double eval(Genotype<IntegerGene> gt) {
-        double groupsConflicts = IntersectionsCounter.count(gt, GROUPS, ACTIVITIES, actitvity -> actitvity.getGroup());
-        double teachersConflicts = IntersectionsCounter.count(gt, TEACHERS, ACTIVITIES, actitvity -> actitvity.getTeacher());
-        double groupWindows = WindowCounter.count(gt, GROUPS, ACTIVITIES, actitvity -> actitvity.getGroup(), TIMESLOTS.size(), 5); // for now fix 5
-        double teachersWindows = WindowCounter.count(gt, TEACHERS, ACTIVITIES, actitvity -> actitvity.getTeacher(), TIMESLOTS.size(), 5);
-        double score = teachersConflicts + groupsConflicts;
-        // score = score * 100; // higher weight for hard constraints
-        score += (groupWindows + 2 * teachersWindows) / (TIMESLOTS.size() * 3); // in (0, 1), guaranteed
+        // keep soft constraints < 1
+        // and hard constraints 0 or >= #soft constraints
+        Function<Activity, NamedEntity> groupGetter = actitvity -> actitvity.getGroup();
+        Function<Activity, NamedEntity> teacherGetter = actitvity -> actitvity.getTeacher();
+
+        double score = 0;
+        double groupsConflicts = IntersectionsCounter.count(gt, GROUPS, ACTIVITIES, groupGetter);
+        double teachersConflicts = IntersectionsCounter.count(gt, TEACHERS, ACTIVITIES, teacherGetter);
+        score = teachersConflicts + groupsConflicts;
+        score *= 5; // number of soft constraints + 1
+
+        score += evalCommon(gt, GROUPS, groupGetter);
+        score += evalCommon(gt, TEACHERS, teacherGetter);
+
         return score;
+    }
+
+    /**
+     * Each use adds 2 soft constraints to score
+     */
+    private static <T> double evalCommon(Genotype<IntegerGene> gt, Set<NamedEntity> allT, Function<Activity, NamedEntity> getT) {
+        double score = 0;
+        double windows = WindowCounter.count(gt, ACTIVITIES, getT, TIMESLOTS.size(), fmt.getTimes().size()); // for now fix 5
+        score += (windows) / (TIMESLOTS.size());
+
+        double days = DaysCounter.count(gt, ACTIVITIES, getT, TIMESLOTS.size(), fmt.getTimes().size());
+        score += days / (allT.size() * fmt.getTimes().size());
+
+        return score;
+
     }
 }
