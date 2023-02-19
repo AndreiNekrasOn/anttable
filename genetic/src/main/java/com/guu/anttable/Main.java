@@ -7,7 +7,6 @@ import java.util.stream.Collectors;
 import org.json.*;
 
 import com.guu.anttable.alg.GAJenetics;
-import com.guu.anttable.constraints.*;
 import com.guu.anttable.utils.*;
 
 public class Main {
@@ -91,11 +90,6 @@ public class Main {
                 transformGroupsToActivities(groups), firstShift);
         Timetable bestTimetable = GAJenetics.run();
         System.out.println(bestTimetable);
-
-        // check if result was correct
-        List<Constraint> constraints = List.of(
-                new TeacherIntersections(true),
-                new GroupsIntersections(true));
-        System.out.println(bestTimetable.checkConstraints(constraints));
+        System.out.println(bestTimetable.getFitnessScore());
     }
 }

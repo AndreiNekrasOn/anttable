@@ -2,8 +2,6 @@ package com.guu.anttable.utils;
 
 import java.util.List;
 
-import com.guu.anttable.constraints.*;
-
 public class Timetable {
 
     private int numberOfDaysInAWeek;
@@ -36,12 +34,6 @@ public class Timetable {
         this.classes = classes;
     }
 
-    public double checkConstraints(List<Constraint> constraints) {
-        return constraints.stream()
-                .map(c -> c.checkConstraint(this))
-                .reduce(0., Double::sum);
-    }
-
     @Override
     public String toString() {
         StringBuilder result = new StringBuilder();
@@ -70,7 +62,7 @@ public class Timetable {
         return fitnessScore;
     }
 
-    public void setFitnessScore(List<Constraint> constraints) {
-        this.fitnessScore = checkConstraints(constraints);
+    public void setFitnessScore(double score) {
+        this.fitnessScore = score;
     }
 }

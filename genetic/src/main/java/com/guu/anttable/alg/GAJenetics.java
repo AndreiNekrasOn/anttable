@@ -7,14 +7,15 @@ import org.jenetics.*;
 import org.jenetics.engine.*;
 import org.jenetics.util.*;
 
+import com.guu.anttable.constraints.IntersectionsCount;
 import com.guu.anttable.utils.*;
 
 public class GAJenetics {
 
     final static List<Timeslot> TIMESLOTS = new ArrayList<>();
     final static List<Activity> ACTIVITIES = new ArrayList<>();
-    final static Set<Group> GROUPS = new HashSet<>();
-    final static Set<Teacher> TEACHERS = new HashSet<>();
+    final static Set<NamedEntity> GROUPS = new HashSet<>();
+    final static Set<NamedEntity> TEACHERS = new HashSet<>();
     static DayFormat fmt;
 
     public static void initialize(List<Timeslot> timeslots, List<Activity> activities, DayFormat fmt) {
@@ -33,7 +34,7 @@ public class GAJenetics {
         }
     }
 
-    public static Timetable decode(Genotype<IntegerGene> bestGenotype, DayFormat fmt) {
+    public static Timetable decode(Genotype<IntegerGene> bestGenotype) {
         final List<ActivityTimeslot> classes = new ArrayList<>();
         Chromosome<IntegerGene> c = bestGenotype.getChromosome();
         IntStream.range(0, c.length()).forEach(i -> {
@@ -55,7 +56,7 @@ public class GAJenetics {
                 .executor(Runnable::run) // ONE THREAD FOR DEBUG AND Reproducibility
                 .populationSize(60)
                 .offspringFraction(0.7)
-                .offspringSelector(new TournamentSelector<>())
+                .offspringSelector(new TournamentSelector<>()) // why this combination?
                 .survivorsSelector(new RouletteWheelSelector<>())
                 // .alterers(new Mutator<>(), new Crossover<>()) // use default for now
                 .build();
@@ -65,62 +66,14 @@ public class GAJenetics {
                 .collect(EvolutionResult.toBestGenotype()));
         System.out.println(statistics);
         System.out.println(result.toString());
-        return decode(result, fmt);
-    }
-
-    private static <T> int countIntersections(Chromosome<IntegerGene> c,
-                                              Set<T> tSet, Callable<Activity, T> getT) {
-        Map<T, Set<Integer>> schedule = new HashMap<>();
-        tSet.forEach(t -> schedule.put(t, new HashSet<>()));
-        final Counter cnt = new Counter(0);
-        IntStream.range(0, c.length()).forEach(i -> {
-            final T t = getT.call(ACTIVITIES.get(i));
-            if (schedule.get(t).contains(c.getGene(i).intValue())) {
-                cnt.inc();
-            } else {
-                schedule.get(t).add(c.getGene(i).intValue());
-            }
-
-        });
-        return cnt.get();
+        return decode(result);
     }
 
     private static double eval(Genotype<IntegerGene> gt) {
-        Chromosome<IntegerGene> c = gt.getChromosome();
-        double groupsConflicts = countIntersections(c, GROUPS, new Callable<Activity, Group>() {
-            public Group call(Activity a) {
-                return a.getGroup();
-            }
-        });
-        double teachersConflicts = countIntersections(c, TEACHERS, new Callable<Activity, Teacher>() {
-            public Teacher call(Activity a) {
-                return a.getTeacher();
-            }
-        });
+        double groupsConflicts = IntersectionsCount.count(gt, GROUPS, ACTIVITIES, actitvity -> actitvity.getGroup());
+        double teachersConflicts = IntersectionsCount.count(gt, TEACHERS, ACTIVITIES, actitvity -> actitvity.getTeacher());
         double score = (teachersConflicts / (TEACHERS.size() * TIMESLOTS.size()) +
                 groupsConflicts / (GROUPS.size() * TIMESLOTS.size()));
         return score;
-    }
-
-    interface Callable<I, O> {
-
-        public O call(I input);
-    }
-
-    static class Counter {
-
-        private int i;
-
-        public Counter(int i) {
-            this.i = i;
-        }
-
-        public void inc() {
-            i++;
-        }
-
-        public int get() {
-            return i;
-        }
     }
 }
