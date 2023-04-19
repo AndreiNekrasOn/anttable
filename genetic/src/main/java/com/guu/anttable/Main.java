@@ -1,0 +1,92 @@
+package com.guu.anttable;
+
+import java.io.*;
+import java.nio.charset.StandardCharsets;
+import java.util.*;
+import java.util.stream.Collectors;
+import org.json.*;
+
+import com.guu.anttable.alg.GAJenetics;
+import com.guu.anttable.utils.*;
+
+public class Main {
+
+    final static List<Activity> ACTIVITIES = new ArrayList<>();
+    final static List<Timeslot> TIMESLOTS = new ArrayList<>();
+
+    public static List<Activity> transformGroupsToActivities(List<Group> groups) {
+        List<Activity> result = new ArrayList<>();
+        for (Group g : groups) {
+            for (SubjectTeacherPair stp : g.getRequiredClasses()) {
+                result.add(new Activity(g, stp.getTeacher(), stp.getSubject()));
+            }
+        }
+        return result;
+    }
+
+    public static List<Timeslot> generateTimeslots(int maxClasses, int maxDays) {
+        List<Timeslot> result = new ArrayList<>();
+        for (int weekday = 0; weekday < maxDays; weekday++) {
+            for (int classNumber = 0; classNumber < maxClasses; classNumber++) {
+                result.add(new Timeslot(weekday, classNumber));
+            }
+        }
+
+        return result;
+    }
+
+    public static List<Group> parseGroupData(String path, List<String> groups)
+            throws IOException, JSONException {
+        List<Group> allGroups = new ArrayList<>();
+        InputStream is = Main.class.getResourceAsStream("/class_requirements.json");
+        String jsonString = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8))
+                .lines()
+                .collect(Collectors.joining("\n"));
+        JSONObject obj = new JSONObject(jsonString);
+        JSONObject inst = obj.getJSONObject("ИИС - 3");
+        for (String gr : groups) {
+            Group currentGroup = new Group(gr, new ArrayList<>());
+            JSONArray classes = inst.getJSONObject(gr)
+                    .getJSONArray("Предметы");
+            for (int i = 0; i < classes.length(); i++) {
+                String className = classes.getJSONObject(i)
+                        .getString("Название");
+                String teacherName = classes.getJSONObject(i)
+                        .getString("Преподаватель");
+                int n = classes.getJSONObject(i).getInt("Количество");
+                for (int j = 0; j < n; j++) {
+                    currentGroup.addClass(
+                            new SubjectTeacherPair(
+                                    new Subject(className),
+                                    new Teacher(teacherName)));
+                }
+            }
+            allGroups.add(currentGroup);
+
+        }
+        return allGroups;
+    }
+
+    public static void main(String[] args) {
+        List<Group> groups;
+        try {
+            List<String> groupsNames = List.of(
+                    "ПМИ", "Бизнес-информатика-1", "Бизнес-информатика-2");
+            groups = parseGroupData("", groupsNames);
+        } catch (IOException e) {
+            System.err.println("Error in parseGroupsData: no such file");
+            System.err.println(e);
+            return;
+        } catch (JSONException e) {
+            System.err.println("Error in parseGroupsData: Invalid json");
+            System.err.println(e);
+            return;
+        }
+        GAJenetics.initialize(
+                generateTimeslots(5, 6),
+                transformGroupsToActivities(groups));
+        Timetable bestTimetable = GAJenetics.run();
+        System.out.println(bestTimetable);
+        System.out.println(bestTimetable.getFitnessScore());
+    }
+}
