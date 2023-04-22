@@ -82,10 +82,8 @@ public class Main {
             System.err.println(e);
             return;
         }
-        GAJenetics.initialize(
-                generateTimeslots(5, 6),
-                transformGroupsToActivities(groups));
-        Timetable bestTimetable = GAJenetics.run();
+        GAJenetics engine = new GAJenetics(generateTimeslots(5,6), transformGroupsToActivities(groups));
+        Timetable bestTimetable = engine.run();
         System.out.println(bestTimetable);
         System.out.println(bestTimetable.getFitnessScore());
     }

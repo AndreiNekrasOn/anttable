@@ -1,49 +1,40 @@
 package com.guu.anttable.constraints;
 
-import java.util.*;
-import java.util.function.Function;
-
-import org.jenetics.*;
-
-import com.guu.anttable.utils.Activity;
-import com.guu.anttable.utils.NamedEntity;
+import io.jenetics.*;
 
 public class WindowCounter {
 
     /**
      * Counts the length of all windows for NamedEntity
      */
-    public static double count(Genotype<IntegerGene> gt, final List<Activity> activities, Function<Activity, NamedEntity> getEntity,
-            int timeslotsSize, int dayDuration) {
+    public static double count(Genotype<IntegerGene> gt, final Integer[][] activities, int isGroup,
+            int timeslotsSize, int dayDuration, int size) {
         Chromosome<IntegerGene> c = gt.getChromosome();
-        Map<String, int[]> entityTimetable = new HashMap<>(); // можно улучшить через битовые операции
-
+        int[] entityTimetable = new int[size];
         for (int i = 0; i < c.length(); i++) {
-            String currentName = getEntity.apply(activities.get(i)).getName();
-            if (!entityTimetable.containsKey(currentName)) {
-                entityTimetable.put(currentName, new int[timeslotsSize]);
-            }
-            entityTimetable.get(currentName)[c.getGene(i).intValue()] = 1; 
+            int currIdx = activities[i][isGroup];
+            entityTimetable[currIdx] |= 1 << c.getGene(i).intValue();
         }
 
         int totalWindowCount = 0;
-        for (int[] timetable : entityTimetable.values()) {
+        for (int timetable : entityTimetable) {
             int currentWindowLength = 0;
             boolean firstActivity = true;
-            for (int i = 0; i < timetable.length; i++) {
+            // можно распараллелить
+            for (int i = 0; i < timeslotsSize; i++) {
                 if (i % dayDuration == 0) { // начало нового дня
                     firstActivity = true;
                     currentWindowLength = 0; // сбрасываем счетчик, так как последние пары пустые
                 }
                 if (firstActivity) {
-                    if (timetable[i] == 0) {
+                    if ((timetable & 1 << i) == 0) {
                         continue;
                     }
                     firstActivity = false;
                 }
-                if (timetable[i] == 0) { 
-                    currentWindowLength++;
-                } else { // если пары нет, увеличиваем счетчик окна
+                if ((timetable & 1<<i) == 0) { 
+                    currentWindowLength++; // если пары нет, увеличиваем счетчик окна
+                } else { 
                     totalWindowCount += currentWindowLength;
                 }
             }

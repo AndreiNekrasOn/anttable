@@ -1,55 +1,69 @@
 package com.guu.anttable.alg;
 
 import java.util.*;
-import java.util.function.Function;
 import java.util.stream.IntStream;
 
-import org.jenetics.*;
-import org.jenetics.engine.*;
-import org.jenetics.util.*;
-
-import com.guu.anttable.constraints.DaysCounter;
-import com.guu.anttable.constraints.IntersectionsCounter;
-import com.guu.anttable.constraints.WindowCounter;
+import com.guu.anttable.constraints.*;
 import com.guu.anttable.utils.*;
 
+import io.jenetics.*;
+import io.jenetics.engine.*;
+import io.jenetics.util.*;
+
+// TODO: major refactoring needed
 public class GAJenetics {
 
-    final static List<Timeslot> TIMESLOTS = new ArrayList<>();
-    final static List<Activity> ACTIVITIES = new ArrayList<>();
-    final static Set<NamedEntity> GROUPS = new HashSet<>();
-    final static Set<NamedEntity> TEACHERS = new HashSet<>();
+    static Timeslot[] TIMESLOTS;
+    static Activity[] ACTIVITIES;
+    final static Set<NamedIdEntity> GROUPS = new HashSet<>();
+    final static Set<NamedIdEntity> TEACHERS = new HashSet<>();
+    static int TEACHER_IDX = 0;
+    static int GROUP_IDX = 0;
 
-    public static void initialize(List<Timeslot> timeslots, List<Activity> activities) {
-        TIMESLOTS.clear();
-        ACTIVITIES.clear();
-        TIMESLOTS.addAll(timeslots);
-        ACTIVITIES.addAll(activities);
+    static Integer[][] ACTIVITIES_PRIMITIVE;
+
+
+    public GAJenetics(List<Timeslot> timeslots, List<Activity> activities) {
+        TIMESLOTS = timeslots.toArray(new Timeslot[0]);
+        ACTIVITIES = activities.toArray(new Activity[0]);
+        // для оптимизации хотим держать в активностях три индекса вместо трёх строк
         decoupleActivities();
     }
 
-    private static void decoupleActivities() {
-        for (Activity a : ACTIVITIES) {
-            GROUPS.add(a.getGroup());
-            TEACHERS.add(a.getTeacher());
+    private void decoupleActivities() {
+        ACTIVITIES_PRIMITIVE = new Integer[ACTIVITIES.length][2];
+        TEACHER_IDX = 0;
+        GROUP_IDX = 0;
+        for (int i = 0; i < ACTIVITIES.length; i++) {
+            Activity a = ACTIVITIES[i];
+            if (!GROUPS.contains(a.getGroup())) {
+                a.getGroup().setId(GROUP_IDX++);
+                GROUPS.add(a.getGroup());
+            }
+            if (!TEACHERS.contains(a.getTeacher())) {
+                a.getTeacher().setId(TEACHER_IDX++);
+                TEACHERS.add(a.getTeacher());
+            }
+            ACTIVITIES_PRIMITIVE[i][0] = a.getGroup().getId();
+            ACTIVITIES_PRIMITIVE[i][1] = a.getTeacher().getId();
         }
+
     }
 
-    public static Timetable decode(Genotype<IntegerGene> bestGenotype) {
+    public Timetable decode(Genotype<IntegerGene> bestGenotype) {
         final List<ActivityTimeslot> classes = new ArrayList<>();
         Chromosome<IntegerGene> c = bestGenotype.getChromosome();
         IntStream.range(0, c.length()).forEach(i -> {
-            ActivityTimeslot at = new ActivityTimeslot(ACTIVITIES.get(i),
-                    TIMESLOTS.get(c.getGene(i).intValue()), "");
+            ActivityTimeslot at = new ActivityTimeslot(ACTIVITIES[i], TIMESLOTS[c.getGene(i).intValue()], "");
             classes.add(at);
         });
         return new Timetable(classes);
     }
 
-    public static Timetable run() {
+    public Timetable run() {
         EvolutionStatistics<Double, ?> statistics = EvolutionStatistics.ofNumber();
         Factory<Genotype<IntegerGene>> gtf = Genotype.of(IntegerChromosome.of(
-                IntRange.of(0, TIMESLOTS.size() - 1), ACTIVITIES.size()));
+                IntRange.of(0, TIMESLOTS.length - 1), ACTIVITIES.length));
         final Engine<IntegerGene, Double> engine = Engine
                 .builder(GAJenetics::eval, gtf)
                 .optimize(Optimize.MINIMUM)
@@ -61,6 +75,7 @@ public class GAJenetics {
                 // .alterers(new Mutator<>(), new Crossover<>()) // use default for now
                 .build();
         Genotype<IntegerGene> result = RandomRegistry.with(new Random(0), r -> engine.stream()
+                // .limit(bySteadyFitness(100))
                 .limit(10000)
                 .peek(statistics)
                 .collect(EvolutionResult.toBestGenotype()));
@@ -74,17 +89,14 @@ public class GAJenetics {
     private static double eval(Genotype<IntegerGene> gt) {
         // keep soft constraints < 1
         // and hard constraints 0 or >= #soft constraints
-        Function<Activity, NamedEntity> groupGetter = actitvity -> actitvity.getGroup();
-        Function<Activity, NamedEntity> teacherGetter = actitvity -> actitvity.getTeacher();
-
         double score = 0;
-        double groupsConflicts = IntersectionsCounter.count(gt, GROUPS, ACTIVITIES, groupGetter);
-        double teachersConflicts = IntersectionsCounter.count(gt, TEACHERS, ACTIVITIES, teacherGetter);
+        double groupsConflicts = IntersectionsCounter.count(gt, GROUP_IDX, ACTIVITIES_PRIMITIVE, 0);
+        double teachersConflicts = IntersectionsCounter.count(gt, TEACHER_IDX, ACTIVITIES_PRIMITIVE, 1);
         score = teachersConflicts + groupsConflicts;
         score *= 5; // number of soft constraints + 1
 
-        score += evalCommon(gt, GROUPS, groupGetter);
-        score += evalCommon(gt, TEACHERS, teacherGetter);
+        score += evalCommon(gt, GROUPS.size(), 0);
+        score += evalCommon(gt, TEACHERS.size(), 1);
 
         return score;
     }
@@ -92,15 +104,15 @@ public class GAJenetics {
     /**
      * Each use adds 2 soft constraints to score
      */
-    private static <T> double evalCommon(Genotype<IntegerGene> gt, Set<NamedEntity> allT, Function<Activity, NamedEntity> getT) {
+    private static <T> double evalCommon(Genotype<IntegerGene> gt, int tSize, int isGroup) {
         double score = 0;
-        int activitiesPerDay = 5; // TODO: remove hardcode
+        int activitiesPerDay = 5;
 
-        double windows = WindowCounter.count(gt, ACTIVITIES, getT, TIMESLOTS.size(), activitiesPerDay); 
-        score += (windows) / (TIMESLOTS.size());
+        double windows = WindowCounter.count(gt, ACTIVITIES_PRIMITIVE, isGroup, TIMESLOTS.length, activitiesPerDay, tSize); 
+        score += (windows) / (TIMESLOTS.length);
 
-        double days = DaysCounter.count(gt, ACTIVITIES, getT, TIMESLOTS.size(), activitiesPerDay);
-        score += days / (allT.size() * activitiesPerDay);
+        double days = DaysCounter.count(gt, ACTIVITIES_PRIMITIVE, isGroup, TIMESLOTS.length, activitiesPerDay, tSize);
+        score += days / (tSize * activitiesPerDay);
 
         return score;
 
