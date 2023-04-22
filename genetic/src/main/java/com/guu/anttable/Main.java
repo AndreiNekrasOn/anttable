@@ -85,9 +85,9 @@ public class Main {
             System.err.println(e);
             return;
         }
-        GAJenetics engine = new GAJenetics(generateTimeslots(5,6), transformGroupsToActivities(plan));
+        GAJenetics engine = new GAJenetics(generateTimeslots(5, 12), transformGroupsToActivities(plan));
         Timetable bestTimetable = engine.run();
-        System.out.println(bestTimetable);
+        // System.out.println(bestTimetable);
         System.out.println(bestTimetable.getFitnessScore());
     }
 }

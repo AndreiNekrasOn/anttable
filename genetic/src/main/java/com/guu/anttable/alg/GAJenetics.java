@@ -1,5 +1,6 @@
 package com.guu.anttable.alg;
 
+import java.time.Duration;
 import java.util.*;
 import java.util.stream.IntStream;
 
@@ -9,6 +10,9 @@ import com.guu.anttable.utils.*;
 import io.jenetics.*;
 import io.jenetics.engine.*;
 import io.jenetics.util.*;
+
+import static io.jenetics.engine.Limits.byExecutionTime;
+import static io.jenetics.engine.Limits.byFitnessThreshold;;
 
 // TODO: major refactoring needed
 public class GAJenetics {
@@ -68,15 +72,16 @@ public class GAJenetics {
                 .builder(GAJenetics::eval, gtf)
                 .optimize(Optimize.MINIMUM)
                 .executor(Runnable::run) // ONE THREAD FOR DEBUG AND Reproducibility
-                .populationSize(60)
-                .offspringFraction(0.7)
-                .offspringSelector(new TournamentSelector<>()) // why this combination?
+                .populationSize(1000)
+                .offspringFraction(0.9)
+                .offspringSelector(new RouletteWheelSelector<>()) // why this combination?
                 .survivorsSelector(new RouletteWheelSelector<>())
                 // .alterers(new Mutator<>(), new Crossover<>()) // use default for now
                 .build();
         Genotype<IntegerGene> result = RandomRegistry.with(new Random(0), r -> engine.stream()
-                // .limit(bySteadyFitness(100))
-                .limit(10000)
+                .limit(byFitnessThreshold(1.))
+                .limit(byExecutionTime(Duration.ofSeconds(60)))
+                .limit(100000)
                 .peek(statistics)
                 .collect(EvolutionResult.toBestGenotype()));
         System.out.println(statistics);
