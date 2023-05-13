@@ -28,10 +28,9 @@ public class GenerateController {
     @ResponseBody
     public Timetable generate() throws IOException, JSONException {
         List<Group> groups;
-        List<String> groupsNames = List.of("ПМИ", "Бизнес-информатика-1", "Бизнес-информатика-2");
-        groups = parseGroupData("", groupsNames);
-        GAJenetics.initialize(generateTimeslots(5, 6), transformGroupsToActivities(groups));
-        return new Timetable(GAJenetics.run());
+        groups = parseGroupData("/plan_8_semester.java");
+        GAJenetics engine = new GAJenetics(generateTimeslots(5, 12), transformGroupsToActivities(groups));
+        return new Timetable(engine.run());
     }
 
 }
