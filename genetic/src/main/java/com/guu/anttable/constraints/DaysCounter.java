@@ -1,34 +1,26 @@
 package com.guu.anttable.constraints;
 
-import java.util.*;
-import java.util.function.Function;
-
-import org.jenetics.*;
-
-import com.guu.anttable.utils.Activity;
-import com.guu.anttable.utils.NamedEntity;
+import io.jenetics.*;
 
 public class DaysCounter {
 
     /**
      * Count number of days in timetable for NamedEntity
+     * @param isGroup 0 if group else 1
      */
-    public static double count(Genotype<IntegerGene> gt, final List<Activity> activities, Function<Activity, NamedEntity> getEntity,
-            int timeslotsSize, int dayDuration) {
+    public static double count(Genotype<IntegerGene> gt, final Integer[][] activities, int isGroup,
+            int timeslotsSize, int dayDuration, int size) {
         Chromosome<IntegerGene> c = gt.getChromosome();
-        Map<String, int[]> entityDaysCount = new HashMap<>(); // можно улучшить через битовые операции
-
-        for (int i = 0; i < c.length(); i++) {
-            String currentName = getEntity.apply(activities.get(i)).getName();
-            if (!entityDaysCount.containsKey(currentName)) {
-                entityDaysCount.put(currentName, new int[timeslotsSize / dayDuration]);
-            }
-            entityDaysCount.get(currentName)[c.getGene(i).intValue() / dayDuration] = 1;
-        }
-
+        // int[][] entityDaysCount = new int[size][timeslotsSize / dayDuration];
+        int[] entityDaysCount = new int[size];
         int totalDaysCount = 0;
-        for (int[] daysCount : entityDaysCount.values()) {
-            totalDaysCount += Arrays.stream(daysCount).sum();
+        for (int i = 0; i < c.length(); i++) {
+            int currentIdx = activities[i][isGroup];
+            int geneIdx = c.getGene(i).intValue() / dayDuration;
+            if ((entityDaysCount[currentIdx] & (1<<geneIdx)) == 0) {
+                totalDaysCount++;
+                entityDaysCount[currentIdx] |= 1<<geneIdx;
+            }
         }
         return totalDaysCount;
     }

@@ -2,7 +2,7 @@ package com.guu.anttable.utils;
 
 import java.util.ArrayList;
 
-public class Group extends NamedEntity {
+public class Group extends NamedIdEntity {
 
     private ArrayList<SubjectTeacherPair> requiredClasses;
 

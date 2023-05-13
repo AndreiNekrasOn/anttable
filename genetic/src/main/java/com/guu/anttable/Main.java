@@ -35,44 +35,47 @@ public class Main {
         return result;
     }
 
-    public static List<Group> parseGroupData(String path, List<String> groups)
+    public static List<Group> parseGroupData(String path)
             throws IOException, JSONException {
         List<Group> allGroups = new ArrayList<>();
-        InputStream is = Main.class.getResourceAsStream("/class_requirements.json");
+        InputStream is = Main.class.getResourceAsStream(path);
         String jsonString = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8))
                 .lines()
                 .collect(Collectors.joining("\n"));
         JSONObject obj = new JSONObject(jsonString);
-        JSONObject inst = obj.getJSONObject("ИИС - 3");
-        for (String gr : groups) {
-            Group currentGroup = new Group(gr, new ArrayList<>());
-            JSONArray classes = inst.getJSONObject(gr)
-                    .getJSONArray("Предметы");
-            for (int i = 0; i < classes.length(); i++) {
-                String className = classes.getJSONObject(i)
-                        .getString("Название");
-                String teacherName = classes.getJSONObject(i)
-                        .getString("Преподаватель");
-                int n = classes.getJSONObject(i).getInt("Количество");
-                for (int j = 0; j < n; j++) {
-                    currentGroup.addClass(
-                            new SubjectTeacherPair(
-                                    new Subject(className),
-                                    new Teacher(teacherName)));
+        Iterator<String> insts = obj.keys();
+        while (insts.hasNext()) {
+            String instName = insts.next();
+            JSONObject inst = obj.getJSONObject(instName);
+            Iterator<String> groups = inst.keys();
+            while (groups.hasNext()) {
+                String groupName = groups.next();
+                Group currentGroup = new Group(groupName, new ArrayList<>());
+                JSONObject jGroup = inst.getJSONObject(groupName);
+                JSONArray classes = jGroup.getJSONArray("Предметы");
+                for (int i = 0; i < classes.length(); i++) {
+                    String className = classes.getJSONObject(i)
+                            .getString("Название");
+                    String teacherName = classes.getJSONObject(i)
+                            .getString("Преподаватель");
+                    int n = classes.getJSONObject(i).getInt("Количество");
+                    for (int j = 0; j < n; j++) {
+                        currentGroup.addClass(
+                                new SubjectTeacherPair(
+                                        new Subject(className),
+                                        new Teacher(teacherName)));
+                    }
                 }
-            }
-            allGroups.add(currentGroup);
-
+                allGroups.add(currentGroup);
+             }
         }
         return allGroups;
     }
 
     public static void main(String[] args) {
-        List<Group> groups;
+        List<Group> plan;
         try {
-            List<String> groupsNames = List.of(
-                    "ПМИ", "Бизнес-информатика-1", "Бизнес-информатика-2");
-            groups = parseGroupData("", groupsNames);
+            plan = parseGroupData(args[0]);
         } catch (IOException e) {
             System.err.println("Error in parseGroupsData: no such file");
             System.err.println(e);
@@ -82,11 +85,9 @@ public class Main {
             System.err.println(e);
             return;
         }
-        GAJenetics.initialize(
-                generateTimeslots(5, 6),
-                transformGroupsToActivities(groups));
-        Timetable bestTimetable = GAJenetics.run();
-        System.out.println(bestTimetable);
+        GAJenetics engine = new GAJenetics(generateTimeslots(5, 12), transformGroupsToActivities(plan));
+        Timetable bestTimetable = engine.run();
+        // System.out.println(bestTimetable);
         System.out.println(bestTimetable.getFitnessScore());
     }
 }

@@ -1,23 +1,22 @@
 package com.guu.anttable.constraints;
 
 import java.util.*;
-import java.util.function.Function;
 
-import org.jenetics.*;
-
-import com.guu.anttable.utils.Activity;
-import com.guu.anttable.utils.NamedEntity;
+import io.jenetics.*;
 
 public class IntersectionsCounter {
 
-    public static double count(Genotype<IntegerGene> gt, final Set<NamedEntity> lookup, 
-            final List<Activity> activities, Function<Activity, NamedEntity> getEntity) {
+    public static double count(Genotype<IntegerGene> gt, final int lookupSize, 
+            final Integer[][] activities, int isGroup) {
         Chromosome<IntegerGene> c = gt.getChromosome();
-        Map<String, Set<Integer>> schedule = new HashMap<>();
-		lookup.forEach(t -> schedule.put(t.getName(), new HashSet<>()));
+        List<Set<Integer>> schedule = new ArrayList<>(lookupSize);
+
+        for (int i = 0; i < lookupSize; i++) {
+            schedule.add(new HashSet<>());
+        }
         int counter = 0;
         for (int i = 0; i < c.length(); i++) {
-            String curr = getEntity.apply(activities.get(i)).getName();
+            int curr = activities[i][isGroup];
             if (schedule.get(curr).contains(c.getGene(i).intValue())) {
                 counter++;
             } else {

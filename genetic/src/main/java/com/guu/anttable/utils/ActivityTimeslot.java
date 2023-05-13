@@ -29,7 +29,8 @@ public class ActivityTimeslot {
     }    @Override
 
     public String toString() {
-        String[] weekdays = {"Mon", "Tue", "Wed", "Thu", "Fri", "Sat"};
+        String[] weekdays = {"Mon", "Tue", "Wed", "Thu", "Fri", "Sat",
+            "Mon2", "Tue2", "Wed2", "Thu2", "Fri2", "Sat2"};
         return String.format("""
                         {"Day": "%s",
                         "Group": "%s",
