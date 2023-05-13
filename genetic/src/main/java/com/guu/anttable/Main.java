@@ -10,15 +10,17 @@ import com.guu.anttable.alg.GAJenetics;
 import com.guu.anttable.utils.*;
 
 public class Main {
-
+    
     final static List<Activity> ACTIVITIES = new ArrayList<>();
     final static List<Timeslot> TIMESLOTS = new ArrayList<>();
+    public final static int MAX_CLASSES = 5;
+    public final static int DAYS_IN_WEEK = 12;
 
-    public static List<Activity> transformGroupsToActivities(List<Group> groups) {
+    public static List<Activity> transformGroupsToActivities(Map<Group, List<SubjectTeacherPair>> studyPlan) {
         List<Activity> result = new ArrayList<>();
-        for (Group g : groups) {
-            for (SubjectTeacherPair stp : g.getRequiredClasses()) {
-                result.add(new Activity(g, stp.getTeacher(), stp.getSubject()));
+        for (var g : studyPlan.entrySet()) {
+            for (var subjectTeacherPair : g.getValue()) {
+                result.add(new Activity(g.getKey(), subjectTeacherPair.teacher(), subjectTeacherPair.subject()));
             }
         }
         return result;
@@ -35,9 +37,9 @@ public class Main {
         return result;
     }
 
-    public static List<Group> parseGroupData(String path)
+    public static Map<Group, List<SubjectTeacherPair>> parseGroupData(String path)
             throws IOException, JSONException {
-        List<Group> allGroups = new ArrayList<>();
+        Map<Group, List<SubjectTeacherPair>> studyPlan = new HashMap<>();
         InputStream is = Main.class.getResourceAsStream(path);
         String jsonString = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8))
                 .lines()
@@ -50,7 +52,8 @@ public class Main {
             Iterator<String> groups = inst.keys();
             while (groups.hasNext()) {
                 String groupName = groups.next();
-                Group currentGroup = new Group(groupName, new ArrayList<>());
+                Group currentGroup = new Group(groupName); 
+                studyPlan.putIfAbsent(currentGroup, new ArrayList<>());
                 JSONObject jGroup = inst.getJSONObject(groupName);
                 JSONArray classes = jGroup.getJSONArray("Предметы");
                 for (int i = 0; i < classes.length(); i++) {
@@ -60,20 +63,54 @@ public class Main {
                             .getString("Преподаватель");
                     int n = classes.getJSONObject(i).getInt("Количество");
                     for (int j = 0; j < n; j++) {
-                        currentGroup.addClass(
-                                new SubjectTeacherPair(
-                                        new Subject(className),
-                                        new Teacher(teacherName)));
+                        studyPlan.get(currentGroup).add(new SubjectTeacherPair(new Subject(className), new Teacher(teacherName)));
                     }
                 }
-                allGroups.add(currentGroup);
              }
         }
-        return allGroups;
+        return studyPlan;
+    }
+
+    public static void toCsv(Timetable t) {
+        Map<Group, List<ActivityTimeslot>> classesByGroup = t.classes().stream()
+                .collect(Collectors.groupingBy(c->c.activity().group()));
+
+
+        Map<Group, String[][]> groupTimetableMatrix = new HashMap<>();
+
+        for (var classes : classesByGroup.entrySet()) {
+            String[][] timetableMatrix = new String[MAX_CLASSES][DAYS_IN_WEEK];
+            for (int i = 0; i < MAX_CLASSES; i++) {
+                for (int j = 0; j < DAYS_IN_WEEK; j++) {
+                    timetableMatrix[i][j] = "";
+                }
+            }
+            for (var activity : classes.getValue()) {
+                if ("".equals(timetableMatrix[activity.timeslot().classNumber()][activity.timeslot().weekday()])) {
+                    timetableMatrix[activity.timeslot().classNumber()][activity.timeslot().weekday()] = 
+                            String.format("%s (%s)", activity.activity().subject().name(), activity.activity().teacher().name());
+                } else {
+                    timetableMatrix[activity.timeslot().classNumber()][activity.timeslot().weekday()] += String.format("/%s", activity.activity().subject().name());
+                    System.out.println("FUCK " + classes.getKey().name());
+                }
+            }
+            groupTimetableMatrix.put(classes.getKey(), timetableMatrix);
+        }
+
+        for (var groupTT : groupTimetableMatrix.entrySet()) {
+            System.out.println("\t\t" + groupTT.getKey());
+            String[][] tt = groupTT.getValue();
+            for (var row : tt) { 
+                for (var item : row) {
+                    System.out.format("%60s| ", item);
+                }
+                System.out.println();
+            }
+        }
     }
 
     public static void main(String[] args) {
-        List<Group> plan;
+        Map<Group, List<SubjectTeacherPair>> plan;
         try {
             plan = parseGroupData(args[0]);
         } catch (IOException e) {
@@ -85,9 +122,9 @@ public class Main {
             System.err.println(e);
             return;
         }
-        GAJenetics engine = new GAJenetics(generateTimeslots(5, 12), transformGroupsToActivities(plan));
+        GAJenetics engine = new GAJenetics(generateTimeslots(MAX_CLASSES, DAYS_IN_WEEK), transformGroupsToActivities(plan));
         Timetable bestTimetable = engine.run();
-        // System.out.println(bestTimetable);
-        System.out.println(bestTimetable.getFitnessScore());
+        toCsv(bestTimetable);
+
     }
 }

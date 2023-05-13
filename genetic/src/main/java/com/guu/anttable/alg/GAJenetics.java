@@ -16,13 +16,11 @@ import static io.jenetics.engine.Limits.byFitnessThreshold;;
 
 // TODO: major refactoring needed
 public class GAJenetics {
-
+    
     static Timeslot[] TIMESLOTS;
     static Activity[] ACTIVITIES;
-    final static Set<NamedIdEntity> GROUPS = new HashSet<>();
-    final static Set<NamedIdEntity> TEACHERS = new HashSet<>();
-    static int TEACHER_IDX = 0;
-    static int GROUP_IDX = 0;
+    final static Map<String, Integer> GROUPS = new HashMap<>();
+    final static Map<String, Integer> TEACHERS = new HashMap<>();
 
     static Integer[][] ACTIVITIES_PRIMITIVE;
 
@@ -36,29 +34,28 @@ public class GAJenetics {
 
     private void decoupleActivities() {
         ACTIVITIES_PRIMITIVE = new Integer[ACTIVITIES.length][2];
-        TEACHER_IDX = 0;
-        GROUP_IDX = 0;
+        int teacherIdx = 0;
+        int groupIdx = 0;
+
         for (int i = 0; i < ACTIVITIES.length; i++) {
             Activity a = ACTIVITIES[i];
-            if (!GROUPS.contains(a.getGroup())) {
-                a.getGroup().setId(GROUP_IDX++);
-                GROUPS.add(a.getGroup());
+            if (!GROUPS.containsKey(a.group().name())) {
+                GROUPS.put(a.group().name(), groupIdx++);
             }
-            if (!TEACHERS.contains(a.getTeacher())) {
-                a.getTeacher().setId(TEACHER_IDX++);
-                TEACHERS.add(a.getTeacher());
+            if (!TEACHERS.containsKey(a.teacher().name())) {
+                TEACHERS.put(a.teacher().name(), teacherIdx++);
             }
-            ACTIVITIES_PRIMITIVE[i][0] = a.getGroup().getId();
-            ACTIVITIES_PRIMITIVE[i][1] = a.getTeacher().getId();
+            ACTIVITIES_PRIMITIVE[i][0] = GROUPS.get(a.group().name());
+            ACTIVITIES_PRIMITIVE[i][1] = TEACHERS.get(a.teacher().name());
         }
-
     }
+
 
     public Timetable decode(Genotype<IntegerGene> bestGenotype) {
         final List<ActivityTimeslot> classes = new ArrayList<>();
-        Chromosome<IntegerGene> c = bestGenotype.getChromosome();
+        Chromosome<IntegerGene> c = bestGenotype.chromosome();
         IntStream.range(0, c.length()).forEach(i -> {
-            ActivityTimeslot at = new ActivityTimeslot(ACTIVITIES[i], TIMESLOTS[c.getGene(i).intValue()], "");
+            ActivityTimeslot at = new ActivityTimeslot(ACTIVITIES[i], TIMESLOTS[c.get(i).intValue()], "");
             classes.add(at);
         });
         return new Timetable(classes);
@@ -73,21 +70,24 @@ public class GAJenetics {
                 .optimize(Optimize.MINIMUM)
                 .executor(Runnable::run) // ONE THREAD FOR DEBUG AND Reproducibility
                 .populationSize(1000)
-                .offspringFraction(0.9)
+                .offspringFraction(0.6)
                 .offspringSelector(new RouletteWheelSelector<>()) // why this combination?
                 .survivorsSelector(new RouletteWheelSelector<>())
-                // .alterers(new Mutator<>(), new Crossover<>()) // use default for now
+                // .alterers(new Mutator<>(0.7))
+                .interceptor(EvolutionInterceptor.ofAfter(er-> {
+                    System.out.format("%s - %s\n",  er.generation(), er.bestFitness());
+                    return er;
+                }))
                 .build();
         Genotype<IntegerGene> result = RandomRegistry.with(new Random(0), r -> engine.stream()
-                .limit(byFitnessThreshold(1.))
-                .limit(byExecutionTime(Duration.ofSeconds(60)))
-                .limit(100000)
+                .limit(byFitnessThreshold(4.))
+                .limit(10000)
                 .peek(statistics)
                 .collect(EvolutionResult.toBestGenotype()));
         System.out.println(statistics);
         System.out.println(result.toString());
+        System.out.println(eval(result));
         Timetable best = decode(result);
-        best.setFitnessScore(eval(result));
         return best;
     }
 
@@ -95,8 +95,8 @@ public class GAJenetics {
         // keep soft constraints < 1
         // and hard constraints 0 or >= #soft constraints
         double score = 0;
-        double groupsConflicts = IntersectionsCounter.count(gt, GROUP_IDX, ACTIVITIES_PRIMITIVE, 0);
-        double teachersConflicts = IntersectionsCounter.count(gt, TEACHER_IDX, ACTIVITIES_PRIMITIVE, 1);
+        double groupsConflicts = IntersectionsCounter.count(gt, GROUPS.size(), ACTIVITIES_PRIMITIVE, 0);
+        double teachersConflicts = IntersectionsCounter.count(gt, TEACHERS.size(), ACTIVITIES_PRIMITIVE, 1);
         score = teachersConflicts + groupsConflicts;
         score *= 5; // number of soft constraints + 1
 

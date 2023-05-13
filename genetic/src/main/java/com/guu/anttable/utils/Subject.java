@@ -1,8 +1,3 @@
 package com.guu.anttable.utils;
 
-public class Subject extends NamedIdEntity{
-
-	public Subject(String name) {
-		super(name);
-	}
-}
+public record Subject(String name) implements NamedEntity {}

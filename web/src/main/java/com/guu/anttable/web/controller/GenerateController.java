@@ -5,16 +5,15 @@ import static com.guu.anttable.Main.parseGroupData;
 import static com.guu.anttable.Main.transformGroupsToActivities;
 
 import java.io.IOException;
-import java.util.List;
 
 import org.json.JSONException;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.guu.anttable.Main;
 import com.guu.anttable.alg.GAJenetics;
-import com.guu.anttable.utils.Group;
-import com.guu.anttable.web.Timetable;
+import com.guu.anttable.utils.Timetable;
 
 
 /**
@@ -27,10 +26,9 @@ public class GenerateController {
     @GetMapping("/generate")
     @ResponseBody
     public Timetable generate() throws IOException, JSONException {
-        List<Group> groups;
-        groups = parseGroupData("/plan_8_semester.java");
-        GAJenetics engine = new GAJenetics(generateTimeslots(5, 12), transformGroupsToActivities(groups));
-        return new Timetable(engine.run());
+        var groups = parseGroupData("/plan_8_semester.java");
+        GAJenetics engine = new GAJenetics(generateTimeslots(Main.MAX_CLASSES, Main.DAYS_IN_WEEK), transformGroupsToActivities(groups));
+        return engine.run();
     }
 
 }

@@ -10,13 +10,13 @@ public class DaysCounter {
      */
     public static double count(Genotype<IntegerGene> gt, final Integer[][] activities, int isGroup,
             int timeslotsSize, int dayDuration, int size) {
-        Chromosome<IntegerGene> c = gt.getChromosome();
+        Chromosome<IntegerGene> c = gt.chromosome();
         // int[][] entityDaysCount = new int[size][timeslotsSize / dayDuration];
         int[] entityDaysCount = new int[size];
         int totalDaysCount = 0;
         for (int i = 0; i < c.length(); i++) {
             int currentIdx = activities[i][isGroup];
-            int geneIdx = c.getGene(i).intValue() / dayDuration;
+            int geneIdx = c.get(i).intValue() / dayDuration;
             if ((entityDaysCount[currentIdx] & (1<<geneIdx)) == 0) {
                 totalDaysCount++;
                 entityDaysCount[currentIdx] |= 1<<geneIdx;
