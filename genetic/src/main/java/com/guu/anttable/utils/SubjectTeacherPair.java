@@ -1,3 +1,3 @@
 package com.guu.anttable.utils;
 
-public record SubjectTeacherPair(Subject subject, Teacher teacher) {}
+public record SubjectTeacherPair(String subject, String teacher) {}

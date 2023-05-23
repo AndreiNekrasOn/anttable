@@ -1,6 +1,5 @@
 package com.guu.anttable.alg;
 
-import java.time.Duration;
 import java.util.*;
 import java.util.stream.IntStream;
 
@@ -11,7 +10,6 @@ import io.jenetics.*;
 import io.jenetics.engine.*;
 import io.jenetics.util.*;
 
-import static io.jenetics.engine.Limits.byExecutionTime;
 import static io.jenetics.engine.Limits.byFitnessThreshold;;
 
 // TODO: major refactoring needed
@@ -39,14 +37,14 @@ public class GAJenetics {
 
         for (int i = 0; i < ACTIVITIES.length; i++) {
             Activity a = ACTIVITIES[i];
-            if (!GROUPS.containsKey(a.group().name())) {
-                GROUPS.put(a.group().name(), groupIdx++);
+            if (!GROUPS.containsKey(a.group())) {
+                GROUPS.put(a.group(), groupIdx++);
             }
-            if (!TEACHERS.containsKey(a.teacher().name())) {
-                TEACHERS.put(a.teacher().name(), teacherIdx++);
+            if (!TEACHERS.containsKey(a.teacher())) {
+                TEACHERS.put(a.teacher(), teacherIdx++);
             }
-            ACTIVITIES_PRIMITIVE[i][0] = GROUPS.get(a.group().name());
-            ACTIVITIES_PRIMITIVE[i][1] = TEACHERS.get(a.teacher().name());
+            ACTIVITIES_PRIMITIVE[i][0] = GROUPS.get(a.group());
+            ACTIVITIES_PRIMITIVE[i][1] = TEACHERS.get(a.teacher());
         }
     }
 

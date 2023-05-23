@@ -11,12 +11,13 @@ import com.guu.anttable.utils.*;
 
 public class Main {
     
+    
     final static List<Activity> ACTIVITIES = new ArrayList<>();
     final static List<Timeslot> TIMESLOTS = new ArrayList<>();
     public final static int MAX_CLASSES = 5;
     public final static int DAYS_IN_WEEK = 12;
 
-    public static List<Activity> transformGroupsToActivities(Map<Group, List<SubjectTeacherPair>> studyPlan) {
+    public static List<Activity> transformGroupsToActivities(Map<String, List<SubjectTeacherPair>> studyPlan) {
         List<Activity> result = new ArrayList<>();
         for (var g : studyPlan.entrySet()) {
             for (var subjectTeacherPair : g.getValue()) {
@@ -37,9 +38,9 @@ public class Main {
         return result;
     }
 
-    public static Map<Group, List<SubjectTeacherPair>> parseGroupData(String path)
+    public static Map<String, List<SubjectTeacherPair>> parseGroupData(String path)
             throws IOException, JSONException {
-        Map<Group, List<SubjectTeacherPair>> studyPlan = new HashMap<>();
+        Map<String, List<SubjectTeacherPair>> studyPlan = new HashMap<>();
         InputStream is = Main.class.getResourceAsStream(path);
         String jsonString = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8))
                 .lines()
@@ -52,8 +53,7 @@ public class Main {
             Iterator<String> groups = inst.keys();
             while (groups.hasNext()) {
                 String groupName = groups.next();
-                Group currentGroup = new Group(groupName); 
-                studyPlan.putIfAbsent(currentGroup, new ArrayList<>());
+                studyPlan.putIfAbsent(groupName, new ArrayList<>());
                 JSONObject jGroup = inst.getJSONObject(groupName);
                 JSONArray classes = jGroup.getJSONArray("Предметы");
                 for (int i = 0; i < classes.length(); i++) {
@@ -63,7 +63,7 @@ public class Main {
                             .getString("Преподаватель");
                     int n = classes.getJSONObject(i).getInt("Количество");
                     for (int j = 0; j < n; j++) {
-                        studyPlan.get(currentGroup).add(new SubjectTeacherPair(new Subject(className), new Teacher(teacherName)));
+                        studyPlan.get(groupName).add(new SubjectTeacherPair(className, teacherName));
                     }
                 }
              }
@@ -72,11 +72,11 @@ public class Main {
     }
 
     public static void toCsv(Timetable t) {
-        Map<Group, List<ActivityTimeslot>> classesByGroup = t.classes().stream()
+        Map<String, List<ActivityTimeslot>> classesByGroup = t.classes().stream()
                 .collect(Collectors.groupingBy(c->c.activity().group()));
 
 
-        Map<Group, String[][]> groupTimetableMatrix = new HashMap<>();
+        Map<String, String[][]> groupTimetableMatrix = new HashMap<>();
 
         for (var classes : classesByGroup.entrySet()) {
             String[][] timetableMatrix = new String[MAX_CLASSES][DAYS_IN_WEEK];
@@ -88,10 +88,10 @@ public class Main {
             for (var activity : classes.getValue()) {
                 if ("".equals(timetableMatrix[activity.timeslot().classNumber()][activity.timeslot().weekday()])) {
                     timetableMatrix[activity.timeslot().classNumber()][activity.timeslot().weekday()] = 
-                            String.format("%s (%s)", activity.activity().subject().name(), activity.activity().teacher().name());
+                            String.format("%s (%s)", activity.activity().subject(), activity.activity().teacher());
                 } else {
-                    timetableMatrix[activity.timeslot().classNumber()][activity.timeslot().weekday()] += String.format("/%s", activity.activity().subject().name());
-                    System.out.println("FUCK " + classes.getKey().name());
+                    timetableMatrix[activity.timeslot().classNumber()][activity.timeslot().weekday()] += String.format("/%s", activity.activity().subject());
+                    System.out.println("FUCK " + classes.getKey());
                 }
             }
             groupTimetableMatrix.put(classes.getKey(), timetableMatrix);
@@ -110,7 +110,7 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        Map<Group, List<SubjectTeacherPair>> plan;
+        Map<String, List<SubjectTeacherPair>> plan;
         try {
             plan = parseGroupData(args[0]);
         } catch (IOException e) {
