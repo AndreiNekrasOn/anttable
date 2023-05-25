@@ -1,4 +1,4 @@
-package com.guu.anttable.utils;
+package com.guu.anttable.genetic.utils;
 
 import java.util.List;
 

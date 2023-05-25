@@ -1,4 +1,4 @@
-package com.guu.anttable;
+package com.guu.anttable.genetic;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
@@ -6,12 +6,11 @@ import java.util.*;
 import java.util.stream.Collectors;
 import org.json.*;
 
-import com.guu.anttable.alg.GAJenetics;
-import com.guu.anttable.utils.*;
+import com.guu.anttable.genetic.alg.GAJenetics;
+import com.guu.anttable.genetic.utils.*;
 
-public class Main {
-    
-    
+public class Parser {
+
     final static List<Activity> ACTIVITIES = new ArrayList<>();
     final static List<Timeslot> TIMESLOTS = new ArrayList<>();
     public final static int MAX_CLASSES = 5;
@@ -38,13 +37,17 @@ public class Main {
         return result;
     }
 
-    public static Map<String, List<SubjectTeacherPair>> parseGroupData(String path)
+    public static String readResource(String path)
             throws IOException, JSONException {
-        Map<String, List<SubjectTeacherPair>> studyPlan = new HashMap<>();
-        InputStream is = Main.class.getResourceAsStream(path);
+        InputStream is = Parser.class.getResourceAsStream(path);
         String jsonString = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8))
                 .lines()
                 .collect(Collectors.joining("\n"));
+        return jsonString;
+    }
+
+    public static Map<String, List<SubjectTeacherPair>> parseGroupData(String jsonString) {
+        Map<String, List<SubjectTeacherPair>> studyPlan = new HashMap<>();
         JSONObject obj = new JSONObject(jsonString);
         Iterator<String> insts = obj.keys();
         while (insts.hasNext()) {
@@ -66,15 +69,15 @@ public class Main {
                         studyPlan.get(groupName).add(new SubjectTeacherPair(className, teacherName));
                     }
                 }
-             }
+            }
         }
         return studyPlan;
+
     }
 
-    public static void toCsv(Timetable t) {
+    public static Map<String, String[][]> toMatrix(Timetable t) {
         Map<String, List<ActivityTimeslot>> classesByGroup = t.classes().stream()
-                .collect(Collectors.groupingBy(c->c.activity().group()));
-
+                .collect(Collectors.groupingBy(c -> c.activity().group()));
 
         Map<String, String[][]> groupTimetableMatrix = new HashMap<>();
 
@@ -87,32 +90,38 @@ public class Main {
             }
             for (var activity : classes.getValue()) {
                 if ("".equals(timetableMatrix[activity.timeslot().classNumber()][activity.timeslot().weekday()])) {
-                    timetableMatrix[activity.timeslot().classNumber()][activity.timeslot().weekday()] = 
-                            String.format("%s (%s)", activity.activity().subject(), activity.activity().teacher());
-                } else {
-                    timetableMatrix[activity.timeslot().classNumber()][activity.timeslot().weekday()] += String.format("/%s", activity.activity().subject());
-                    System.out.println("FUCK " + classes.getKey());
+                    timetableMatrix[activity.timeslot().classNumber()][activity.timeslot().weekday()] = String
+                            .format("%s (%s)", activity.activity().subject(), activity.activity().teacher());
+                } else { // shouldn't happen - illegal collision
+                    throw new IllegalStateException("illegal state in Parser#toMatrix");
+                    // timetableMatrix[activity.timeslot().classNumber()][activity.timeslot().weekday()] += String
+                    //         .format("/%s", activity.activity().subject());
                 }
             }
             groupTimetableMatrix.put(classes.getKey(), timetableMatrix);
         }
+        return groupTimetableMatrix;
+    }
+    public static String formatTimteableMatrix(Map<String, String[][]> groupTimetableMatrix) {
+        StringBuilder result = new StringBuilder();
 
         for (var groupTT : groupTimetableMatrix.entrySet()) {
-            System.out.println("\t\t" + groupTT.getKey());
+            result.append("\t\t" + groupTT.getKey());
             String[][] tt = groupTT.getValue();
-            for (var row : tt) { 
+            for (var row : tt) {
                 for (var item : row) {
-                    System.out.format("%60s| ", item);
+                    result.append(String.format("%60s| ", item));
                 }
-                System.out.println();
+                result.append("\n");
             }
         }
+        return result.toString();
     }
 
     public static void main(String[] args) {
         Map<String, List<SubjectTeacherPair>> plan;
         try {
-            plan = parseGroupData(args[0]);
+            plan = parseGroupData(readResource(args[0]));
         } catch (IOException e) {
             System.err.println("Error in parseGroupsData: no such file");
             System.err.println(e);
@@ -122,9 +131,9 @@ public class Main {
             System.err.println(e);
             return;
         }
-        GAJenetics engine = new GAJenetics(generateTimeslots(MAX_CLASSES, DAYS_IN_WEEK), transformGroupsToActivities(plan));
+        GAJenetics engine = new GAJenetics(generateTimeslots(MAX_CLASSES, DAYS_IN_WEEK),
+                transformGroupsToActivities(plan));
         Timetable bestTimetable = engine.run();
-        toCsv(bestTimetable);
-
+        System.out.println(formatTimteableMatrix(toMatrix(bestTimetable)));
     }
 }

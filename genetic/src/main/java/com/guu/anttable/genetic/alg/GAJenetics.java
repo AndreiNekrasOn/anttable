@@ -1,10 +1,10 @@
-package com.guu.anttable.alg;
+package com.guu.anttable.genetic.alg;
 
 import java.util.*;
 import java.util.stream.IntStream;
 
-import com.guu.anttable.constraints.*;
-import com.guu.anttable.utils.*;
+import com.guu.anttable.genetic.constraints.*;
+import com.guu.anttable.genetic.utils.*;
 
 import io.jenetics.*;
 import io.jenetics.engine.*;

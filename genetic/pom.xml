@@ -45,7 +45,7 @@
                 <configuration>
                     <archive>
                         <manifest>
-                            <mainClass>com.guu.anttable.Main</mainClass>
+                            <mainClass>com.guu.anttable.genetic.Parser</mainClass>
                         </manifest>
                     </archive>
                     <descriptorRefs>

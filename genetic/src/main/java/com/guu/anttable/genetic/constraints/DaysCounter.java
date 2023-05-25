@@ -1,4 +1,4 @@
-package com.guu.anttable.constraints;
+package com.guu.anttable.genetic.constraints;
 
 import io.jenetics.*;
 
