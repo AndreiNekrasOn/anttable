@@ -1,0 +1,25 @@
+@startuml
+
+package Веб {
+    [Клиент] -right- API
+    [Сервер] -left- API
+    [Клиент] <-up- "Учебный план"
+    [Клиент] -down-> "Расписание"
+    note left of [Клиент]: Vue.js
+    note top of [Сервер]: SpringBoot
+}
+
+package Алгоритм {
+    [Парсер] <-> [Генетический алгоритм]
+    note right of [Генетический алгоритм]: Jenetics
+}
+
+database БД {
+    [In-memory H2 Database]
+}
+
+[Сервер] - [In-memory H2 Database]
+[Сервер] -left- [Парсер]
+[Сервер] ..> [Генетический алгоритм]: Инициализация
+
+@enduml

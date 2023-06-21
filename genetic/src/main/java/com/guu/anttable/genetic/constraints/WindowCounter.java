@@ -1,4 +1,4 @@
-package com.guu.anttable.constraints;
+package com.guu.anttable.genetic.constraints;
 
 import io.jenetics.*;
 
@@ -9,11 +9,11 @@ public class WindowCounter {
      */
     public static double count(Genotype<IntegerGene> gt, final Integer[][] activities, int isGroup,
             int timeslotsSize, int dayDuration, int size) {
-        Chromosome<IntegerGene> c = gt.getChromosome();
+        Chromosome<IntegerGene> c = gt.chromosome();
         int[] entityTimetable = new int[size];
         for (int i = 0; i < c.length(); i++) {
             int currIdx = activities[i][isGroup];
-            entityTimetable[currIdx] |= 1 << c.getGene(i).intValue();
+            entityTimetable[currIdx] |= 1 << c.get(i).intValue();
         }
 
         int totalWindowCount = 0;
