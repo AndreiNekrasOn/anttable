@@ -8,7 +8,7 @@
 <body>
 	<h1>Введите информацию об учебном плане в формате JSON</h1>
     <form action="#" th:action="@{/generate}" th:object="${studyplan}" method="post">
-    	<p>Id: <input type="text" th:field="*{jsonStudyPlan}" /></p>
+        <textarea th:field="*{jsonStudyPlan}"></textarea>
         <p><input type="submit" value="Submit" /> <input type="reset" value="Reset" /></p>
     </form>
 </body>
