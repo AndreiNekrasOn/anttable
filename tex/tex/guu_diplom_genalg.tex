@@ -4,6 +4,7 @@
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
 \usepackage{svg}
+\usepackage{listings}
 \usepackage{graphicx}
 \usepackage{subcaption}
 
@@ -137,18 +138,25 @@ $$f = conflicts + \frac{1}{N} \sum^N_{i=1} w_i(\tau) \to min$$
 Тогда $chromosome = [gen_1, gen_2, \dots, gen_N]$, где  $gen_i \in [1, |T|]$\\
 \end{frame}
 
-\begin{frame}
+\begin{frame}[fragile]
 \frametitle{Генетический алгоритм}
 \begin{itemize}
-\item Инициализация\\
-- обычно инициализируется случайной популяцией (без невалидных особей)
+\item Инициализация
+\begin{lstlisting}[basicstyle=\footnotesize]
+for i in  1..N:
+  pop[i] := [rand(), rand(), ... rand()]
+\end{lstlisting}
+
 \item Селекция\\
-- выбор особей для выживания или применения генетических операций\\
-Например, рулеточная: $p_i = \frac{f_i}{\sum^N_{i=1}f_i}$
+\begin{lstlisting}[basicstyle=\footnotesize]
+selected = []
+for i in  1..N:
+  if (select_criterea(pop[i], pop): selected.add(pop[i])
+\end{lstlisting}
 \item Генетические операции\\
-- кроссовер и мутации
+    - мутация, кроссинговер
 \item Останова\\
-- по пороговому значению целевой функции, по тайм-ауту, по числу итераций, по времени исполнения и т.д.
+    - пороговое значение, число итераций, устойчивость, таймаут
 \end{itemize}
 \end{frame}
 
